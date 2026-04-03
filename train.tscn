@@ -2,20 +2,17 @@
 
 [ext_resource type="Script" uid="uid://chwo34813bwpe" path="res://train.gd" id="1_bju55"]
 [ext_resource type="Script" uid="uid://cwyhc1k2i6nts" path="res://LeverHandle.gd" id="2_lomod"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_lagc3"]
+[ext_resource type="PackedScene" uid="uid://bhegfhdap0y38" path="res://tram.blend" id="3_kfycv"]
 
 [node name="Train" type="Node3D" unique_id=330913242]
 script = ExtResource("1_bju55")
 
 [node name="SeatAnchor" type="Node3D" parent="." unique_id=1844108184]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19999999, 0.27197742)
 
 [node name="LeverBase" type="Node3D" parent="SeatAnchor" unique_id=1425816849]
 
 [node name="LeverHandle" type="Node3D" parent="SeatAnchor/LeverBase" unique_id=491826228]
 script = ExtResource("2_lomod")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=2088285075]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-mesh = SubResource("BoxMesh_lagc3")
+[node name="tram" parent="." unique_id=956015245 instance=ExtResource("3_kfycv")]

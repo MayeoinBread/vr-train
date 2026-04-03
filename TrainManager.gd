@@ -33,7 +33,6 @@ func _process(delta: float) -> void:
 		#active_train.update_movement(throttle_input, delta)
 		#active_follow.progress += active_train.speed * delta
 		var throttle = active_train.get_throttle_input()
-		print(throttle)
 		active_train.update_movement(throttle, delta)
 		active_follow.progress += active_train.speed * delta
 

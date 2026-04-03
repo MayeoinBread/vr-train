@@ -15,6 +15,8 @@ sky_material = SubResource("ProceduralSkyMaterial_0xm2m")
 [sub_resource type="Environment" id="Environment_1bvp3"]
 background_mode = 2
 sky = SubResource("Sky_h2yge")
+ambient_light_color = Color(0.90576947, 0.90576947, 0.90576947, 1)
+ambient_light_energy = 0.4
 tonemap_mode = 2
 
 [node name="Main" type="Node3D" unique_id=1151617610 node_paths=PackedStringArray("player")]
@@ -27,7 +29,13 @@ environment = SubResource("Environment_1bvp3")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=674234621]
 transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+light_color = Color(0.95468724, 0.95468724, 1, 1)
 shadow_enabled = true
+shadow_bias = 0.05
+shadow_normal_bias = 0.05
+directional_shadow_mode = 1
+directional_shadow_fade_start = 0.01
+directional_shadow_max_distance = 1.0
 
 [node name="CharacterOrigin" parent="." unique_id=1651946498 instance=ExtResource("2_0xm2m")]
 

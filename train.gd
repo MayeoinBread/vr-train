@@ -18,7 +18,6 @@ func _process(delta: float) -> void:
 func update_movement(input_throttle: float, delta: float) -> void:
 	speed += input_throttle * acceleration * delta
 	speed = clamp(speed, 0.0, max_speed)
-	print(speed)
 
 func get_throttle_input() -> float:
 	return lever.get_value()
