@@ -37,9 +37,10 @@ throttle_down={
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-anti_aliasing/quality/screen_space_aa=1
+textures/vram_compression/import_etc2_astc=true
 
 [xr]
 
 openxr/enabled=true
+openxr/default_action_map="uid://b24pdombe50ma"
 shaders/enabled=true

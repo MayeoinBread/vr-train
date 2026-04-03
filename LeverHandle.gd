@@ -3,7 +3,7 @@ extends Node3D
 @export var min_angle := -30.0  # degrees
 @export var max_angle := 30.0  # degrees
 
-var current_angle := 0.0
+var current_angle := -30.0
 var is_grabbed := true  # TODO set to false, update with VR grab
 
 
