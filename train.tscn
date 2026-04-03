@@ -15,4 +15,4 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19999999, 0.27197742)
 [node name="LeverHandle" type="Node3D" parent="SeatAnchor/LeverBase" unique_id=491826228]
 script = ExtResource("2_lomod")
 
-[node name="tram" parent="." unique_id=956015245 instance=ExtResource("3_kfycv")]
+[node name="tram" parent="." unique_id=750244354 instance=ExtResource("3_kfycv")]
