@@ -1,26 +1,93 @@
 [gd_scene format=3 uid="uid://bviimvilp1de8"]
 
-[ext_resource type="Script" uid="uid://ceyxesd1tco3l" path="res://TrackBuilder.gd" id="1_mll3j"]
-[ext_resource type="PackedScene" uid="uid://mb8jwqfutsv4" path="res://sleeper.tscn" id="2_phvr8"]
+[ext_resource type="PackedScene" uid="uid://b284fc5gsg17" path="res://track_segment.tscn" id="1_mll3j"]
+[ext_resource type="Script" uid="uid://2ly44wjqdec3" path="res://track.gd" id="1_phvr8"]
+[ext_resource type="PackedScene" uid="uid://dnrluif7qsw8x" path="res://Station.tscn" id="3_bcvet"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_phvr8"]
-size = Vector3(0.1, 0.1, 0.5)
-
-[sub_resource type="Curve3D" id="Curve3D_dlrp4"]
-closed = true
+[sub_resource type="Curve3D" id="Curve3D_bcvet"]
 _data = {
-"points": PackedVector3Array(6, 0, 6, -6, 0, -6, -10, 0, 10, -6, 0, 6, 6, 0, -6, -10, 0, -10, -6, 0, -6, 6, 0, 6, 10, 0, -10, 6, 0, -6, -6, 0, 6, 10, 0, 10),
-"tilts": PackedFloat32Array(0, 0, 0, 0)
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -20),
+"tilts": PackedFloat32Array(0, 0)
 }
-point_count = 4
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_8nfsw"]
+_data = {
+"points": PackedVector3Array(0.0178895, 0, 12.363113, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7.8437567, 5.722046e-05, -0.021463394, 0, 0, -20),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_vr403"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, -10, 0, 0, 0, 0, 0, 10, 0, 0, 0, 5, 0, -20),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_ucvjy"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -20),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_82y7p"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -20),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
 
 [node name="Track" type="Node3D" unique_id=1060532867]
-script = ExtResource("1_mll3j")
-sleeper_scene = ExtResource("2_phvr8")
-rail_mesh = SubResource("BoxMesh_phvr8")
+script = ExtResource("1_phvr8")
+start_segment = NodePath("TrackSegment")
 
-[node name="Path3D" type="Path3D" parent="." unique_id=1758601317]
-curve = SubResource("Curve3D_dlrp4")
+[node name="TrackSegment" parent="." unique_id=469804477 node_paths=PackedStringArray("next_segments") instance=ExtResource("1_mll3j")]
+next_segments = [NodePath("../TrackSegment2"), NodePath("../TrackSegment3")]
 
-[node name="TrainFollow" type="PathFollow3D" parent="Path3D" unique_id=1472178056]
-transform = Transform3D(0.707106, 0, 0.7071059, 0, 1, 0, -0.7071059, 0, 0.707106, -10, 0, 10)
+[node name="Path3D" parent="TrackSegment" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_bcvet")
+
+[node name="TrackSegment2" parent="." unique_id=179834451 node_paths=PackedStringArray("next_segments", "previous_segments") instance=ExtResource("1_mll3j")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -20)
+next_segments = [NodePath("../TrackSegment4")]
+previous_segments = [NodePath("../TrackSegment")]
+
+[node name="Path3D" parent="TrackSegment2" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_8nfsw")
+
+[node name="TrackSegment3" parent="." unique_id=1193161442 node_paths=PackedStringArray("next_segments", "previous_segments") instance=ExtResource("1_mll3j")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -20)
+next_segments = [NodePath("../TrackSegment5")]
+previous_segments = [NodePath("../TrackSegment")]
+
+[node name="Path3D" parent="TrackSegment3" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_vr403")
+
+[node name="TrackSegment4" parent="." unique_id=1346753118 node_paths=PackedStringArray("previous_segments") instance=ExtResource("1_mll3j")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -40)
+previous_segments = [NodePath("../TrackSegment2")]
+
+[node name="Path3D" parent="TrackSegment4" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_ucvjy")
+
+[node name="TrackSegment5" parent="." unique_id=679016745 node_paths=PackedStringArray("previous_segments", "station") instance=ExtResource("1_mll3j")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -40)
+previous_segments = [NodePath("../TrackSegment3")]
+station = NodePath("Station")
+is_station = true
+
+[node name="Path3D" parent="TrackSegment5" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_82y7p")
+
+[node name="Station" parent="TrackSegment5" unique_id=801352876 instance=ExtResource("3_bcvet")]
+stop_distance = 16.0
+station_name = "Station 1"
+stop_tolerance = 4.0
+
+[editable path="TrackSegment"]
+[editable path="TrackSegment2"]
+[editable path="TrackSegment3"]
+[editable path="TrackSegment4"]
+[editable path="TrackSegment5"]

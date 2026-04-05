@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://b284fc5gsg17"]
+
+[ext_resource type="Script" uid="uid://u13x7n1mmhj4" path="res://TrackSegment.gd" id="1_2sxnx"]
+[ext_resource type="Script" uid="uid://cfqhnvo62sgjf" path="res://TrackBuilder.gd" id="2_pnnvw"]
+
+[sub_resource type="Curve3D" id="Curve3D_2sxnx"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -20),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[node name="TrackSegment" type="Node3D" unique_id=469804477 node_paths=PackedStringArray("path")]
+script = ExtResource("1_2sxnx")
+path = NodePath("Path3D")
+
+[node name="Path3D" type="Path3D" parent="." unique_id=1582978415]
+curve = SubResource("Curve3D_2sxnx")
+
+[node name="TrackBuilder" type="Node3D" parent="." unique_id=1035268372 node_paths=PackedStringArray("path")]
+script = ExtResource("2_pnnvw")
+path = NodePath("../Path3D")
+
+[node name="JunctionMarker" type="Node3D" parent="." unique_id=979068986]
+
+[connection signal="curve_changed" from="Path3D" to="TrackBuilder" method="_on_path_3d_curve_changed"]

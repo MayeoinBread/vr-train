@@ -1,13 +1,10 @@
 [gd_scene format=3 uid="uid://mb8jwqfutsv4"]
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_i1hmg"]
-top_radius = 0.1
-bottom_radius = 0.1
-radial_segments = 8
-rings = 2
+[sub_resource type="BoxMesh" id="BoxMesh_i1hmg"]
+size = Vector3(2.6, 0.125, 0.25)
 
 [node name="Node3D" type="Node3D" unique_id=2132607313]
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1851110269]
-transform = Transform3D(-4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0, 1, 0, 0, 0)
-mesh = SubResource("CylinderMesh_i1hmg")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.062, 0)
+mesh = SubResource("BoxMesh_i1hmg")

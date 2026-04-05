@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://clmrg4nj2p7d"]
+
+[ext_resource type="Script" uid="uid://dtxvwc1c5438l" path="res://DebugUI.gd" id="1_egwsh"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_egwsh"]
+bg_color = Color(0, 0, 0, 0.6)
+
+[node name="DebugUI" type="Node3D" unique_id=808809629]
+script = ExtResource("1_egwsh")
+
+[node name="DebugUI_Desktop" type="CanvasLayer" parent="." unique_id=963925041]
+
+[node name="MarginContainer" type="MarginContainer" parent="DebugUI_Desktop" unique_id=1012980649]
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="PanelContainer" type="PanelContainer" parent="DebugUI_Desktop/MarginContainer" unique_id=923342600]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_egwsh")
+
+[node name="Label" type="Label" parent="DebugUI_Desktop/MarginContainer/PanelContainer" unique_id=504442142]
+layout_mode = 2
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 32
+
+[node name="DebugUI_VR" type="Node3D" parent="." unique_id=1126421657]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DebugUI_VR" unique_id=882856915]
+
+[node name="SubViewport" type="SubViewport" parent="DebugUI_VR" unique_id=1053315167]
+transparent_bg = true
+
+[node name="Control" type="Control" parent="DebugUI_VR/SubViewport" unique_id=892844130]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Panel" type="Panel" parent="DebugUI_VR/SubViewport/Control" unique_id=1002595594]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="DebugUI_VR/SubViewport/Control/Panel" unique_id=1738301217]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0

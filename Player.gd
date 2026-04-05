@@ -16,4 +16,10 @@ func _on_input_vector2_changed(action_name: String, value: Vector2) -> void:
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	pass
+	# TODO temporary keyboard input
+	var input := 0.0
+	if Input.is_action_pressed("ui_up"):
+		input += 0.2
+	if Input.is_action_pressed("ui_down"):
+		input -= 0.2
+	emit_signal("train_throttle_changed", input)
