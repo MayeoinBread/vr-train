@@ -30,9 +30,12 @@ theme_override_font_sizes/font_size = 32
 [node name="DebugUI_VR" type="Node3D" parent="." unique_id=1126421657]
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="DebugUI_VR" unique_id=882856915]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -1)
 
 [node name="SubViewport" type="SubViewport" parent="DebugUI_VR" unique_id=1053315167]
+use_xr = true
 transparent_bg = true
+size = Vector2i(0, 0)
 
 [node name="Control" type="Control" parent="DebugUI_VR/SubViewport" unique_id=892844130]
 layout_mode = 3

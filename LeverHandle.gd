@@ -33,6 +33,6 @@ func update_from_input():
 func get_value() -> float:
 	return inverse_lerp(min_angle, max_angle, current_angle)
 
-
 func _on_hinge_hinge_moved(angle: Variant) -> void:
+	print("Hinge moved: %.2f" % angle)
 	current_angle = angle

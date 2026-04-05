@@ -84,6 +84,7 @@ func get_direction_string(dir):
 func detect_mode():
 	var xr = XRServer.primary_interface
 	use_vr = xr != null and xr.is_initialized()
+	print("Use VR UI: %s" % use_vr)
 
 func apply_mode():
 	desktop_ui.visible = not use_vr

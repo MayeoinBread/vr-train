@@ -1,13 +1,9 @@
-[gd_scene format=3 uid="uid://1r4i3q2gkyl5"]
+[gd_scene format=3 uid="uid://cm1b50f6vx3vg"]
 
 [ext_resource type="Script" uid="uid://lkyei0b6vwx6" path="res://Player.gd" id="1_oolk3"]
+[ext_resource type="PackedScene" uid="uid://bdwmserhqai5h" path="res://addons/godot-xr-tools/hands/scenes/lowpoly/left_physics_hand_low.tscn" id="2_atbvg"]
 [ext_resource type="PackedScene" uid="uid://b4ysuy43poobf" path="res://addons/godot-xr-tools/functions/function_pickup.tscn" id="2_pjt0s"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_oolk3"]
-size = Vector3(0.1, 0.1, 0.1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_7ig0a"]
-size = Vector3(0.1, 0.1, 0.1)
+[ext_resource type="PackedScene" uid="uid://btf05hjpw6k05" path="res://addons/godot-xr-tools/hands/scenes/lowpoly/right_physics_hand_low.tscn" id="4_cxxw8"]
 
 [node name="Character" type="Node3D" unique_id=1919104733]
 script = ExtResource("1_oolk3")
@@ -20,17 +16,19 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 0)
 [node name="LeftHand" type="XRController3D" parent="XROrigin3D" unique_id=44608677]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 1, -0.5)
 tracker = &"left_hand"
+pose = &"grip"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="XROrigin3D/LeftHand" unique_id=344772058]
-mesh = SubResource("BoxMesh_oolk3")
+[node name="LeftPhysicsHand" parent="XROrigin3D/LeftHand" unique_id=825747513 instance=ExtResource("2_atbvg")]
 
 [node name="FunctionPickup" parent="XROrigin3D/LeftHand" unique_id=1619779117 instance=ExtResource("2_pjt0s")]
+transform = Transform3D(1, 0, 0, 0, 0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 0, 0)
 
 [node name="RightHand" type="XRController3D" parent="XROrigin3D" unique_id=715339780]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1, -0.5)
 tracker = &"right_hand"
+pose = &"grip"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="XROrigin3D/RightHand" unique_id=607655956]
-mesh = SubResource("BoxMesh_7ig0a")
+[node name="RightPhysicsHand" parent="XROrigin3D/RightHand" unique_id=463220554 instance=ExtResource("4_cxxw8")]
 
 [node name="FunctionPickup" parent="XROrigin3D/RightHand" unique_id=124066045 instance=ExtResource("2_pjt0s")]
+transform = Transform3D(1, 0, 0, 0, 0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 0, 0)

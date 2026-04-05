@@ -4,7 +4,6 @@ extends Node3D
 @export var player: Node3D
 @export var track_root: Node3D
 
-#@export var start_segment: NodePath  # Track Segment
 @export var start_distance := 0.0
 
 @export var marker_distance := 5.0  # meters along branch
@@ -14,7 +13,6 @@ var junction_markers: Array[MeshInstance3D] = []
 var train: Node3D
 var current_segment: Node3D
 var distance_along := 0.0
-var throttle := 0.0
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -26,21 +24,12 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if not train or not current_segment:
 		return
-	
-	if Input.is_action_just_pressed("switch_junction") and can_switch_junction():
-		if train.direction == train.Direction.FORWARD:
-			var count = current_segment.next_segments.size()
-			if count > 1:
-				current_segment.next_junction_index = (current_segment.next_junction_index + 1) % count
-		elif train.direction == train.Direction.REVERSE:
-			var count = current_segment.previous_segments.size()
-			if count > 1:
-				current_segment.previous_junction_index = (current_segment.previous_junction_index + 1) % count
 		
-	update_junction_markers()
+	# Desktop input
+	if Input.is_action_just_pressed("switch_junction"):
+		switch_junction()
 	
 	# Update train speed
-	train.update_movement(throttle, delta)
 	distance_along += train.speed * delta
 	
 	var curve = current_segment.path.curve
@@ -56,6 +45,24 @@ func _process(delta: float) -> void:
 		return
 	
 	update_train_transform()
+
+func switch_junction():
+	if not train or not current_segment:
+		return
+	
+	if not can_switch_junction():
+		return
+	
+	if train.direction == train.Direction.FORWARD:
+		var count = current_segment.next_segments.size()
+		if count > 1:
+			current_segment.next_junction_index = (current_segment.next_junction_index + 1) % count
+	elif train.direction == train.Direction.REVERSE:
+		var count = current_segment.previous_segments.size()
+		if count > 1:
+			current_segment.previous_junction_index = (current_segment.previous_junction_index + 1) % count
+	
+	update_junction_markers()
 
 func move_to_next_segment():
 	var next = choose_next_segment()
@@ -92,7 +99,7 @@ func choose_previous_segment():
 	return current_segment.get_previous_segment(index)
 
 func _on_throttle_changed(value: float) -> void:
-	throttle = value
+	train.set_throttle(value)
 	
 func spawn_train() -> void:
 	if not train_scene:
@@ -100,6 +107,7 @@ func spawn_train() -> void:
 	
 	train = train_scene.instantiate()
 	add_child(train)
+	train.train_manager = self
 	current_segment = track_root.get_node(track_root.start_segment)
 	distance_along = start_distance
 	

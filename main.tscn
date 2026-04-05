@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://beub3p03djlqk"]
 
 [ext_resource type="Script" uid="uid://b6uvtb4id8wnj" path="res://TrainManager.gd" id="1_0xm2m"]
-[ext_resource type="Script" uid="uid://csvvaa01ciwy7" path="res://main.gd" id="1_lquwl"]
-[ext_resource type="PackedScene" uid="uid://1r4i3q2gkyl5" path="res://character.tscn" id="2_0xm2m"]
+[ext_resource type="Script" uid="uid://csvvaa01ciwy7" path="res://Main.gd" id="1_lquwl"]
+[ext_resource type="PackedScene" uid="uid://cm1b50f6vx3vg" path="res://Character.tscn" id="2_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://dh0xxjn6wioax" path="res://train.tscn" id="2_1bvp3"]
 [ext_resource type="PackedScene" uid="uid://clmrg4nj2p7d" path="res://DebugUI.tscn" id="2_7mycd"]
 [ext_resource type="PackedScene" uid="uid://bviimvilp1de8" path="res://track.tscn" id="4_lquwl"]
