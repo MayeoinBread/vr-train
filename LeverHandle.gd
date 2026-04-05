@@ -3,8 +3,8 @@ extends Node3D
 @export var min_angle := -30.0  # degrees
 @export var max_angle := 30.0  # degrees
 
-var current_angle := -30.0
-var is_grabbed := true  # TODO set to false, update with VR grab
+var current_angle := 0.0
+var is_grabbed := false  # TODO set to false, update with VR grab
 
 
 # Called when the node enters the scene tree for the first time.
@@ -32,3 +32,7 @@ func update_from_input():
 
 func get_value() -> float:
 	return inverse_lerp(min_angle, max_angle, current_angle)
+
+
+func _on_hinge_hinge_moved(angle: Variant) -> void:
+	current_angle = angle

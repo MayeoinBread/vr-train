@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://1r4i3q2gkyl5"]
 
 [ext_resource type="Script" uid="uid://lkyei0b6vwx6" path="res://Player.gd" id="1_oolk3"]
+[ext_resource type="PackedScene" uid="uid://b4ysuy43poobf" path="res://addons/godot-xr-tools/functions/function_pickup.tscn" id="2_pjt0s"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_oolk3"]
 size = Vector3(0.1, 0.1, 0.1)
@@ -23,9 +24,13 @@ tracker = &"left_hand"
 [node name="MeshInstance3D" type="MeshInstance3D" parent="XROrigin3D/LeftHand" unique_id=344772058]
 mesh = SubResource("BoxMesh_oolk3")
 
+[node name="FunctionPickup" parent="XROrigin3D/LeftHand" unique_id=1619779117 instance=ExtResource("2_pjt0s")]
+
 [node name="RightHand" type="XRController3D" parent="XROrigin3D" unique_id=715339780]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1, -0.5)
 tracker = &"right_hand"
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="XROrigin3D/RightHand" unique_id=607655956]
 mesh = SubResource("BoxMesh_7ig0a")
+
+[node name="FunctionPickup" parent="XROrigin3D/RightHand" unique_id=124066045 instance=ExtResource("2_pjt0s")]

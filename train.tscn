@@ -3,6 +3,23 @@
 [ext_resource type="Script" uid="uid://chwo34813bwpe" path="res://train.gd" id="1_bju55"]
 [ext_resource type="Script" uid="uid://cwyhc1k2i6nts" path="res://LeverHandle.gd" id="2_lomod"]
 [ext_resource type="PackedScene" uid="uid://bhegfhdap0y38" path="res://tram.blend" id="3_kfycv"]
+[ext_resource type="PackedScene" uid="uid://bnvxqb33lltmj" path="res://addons/godot-xr-tools/interactables/interactable_hinge.tscn" id="4_3bh8j"]
+[ext_resource type="PackedScene" uid="uid://bddj5m7ull6g0" path="res://addons/godot-xr-tools/interactables/interactable_handle.tscn" id="5_3ccrb"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_l5j6f"]
+size = Vector3(0.03, 0.21, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_3bh8j"]
+size = Vector3(0.13, 0.03, 0.03)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3bh8j"]
+size = Vector3(0.13, 0.23, 0.03)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_3bh8j"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 0.1
+radial_segments = 16
 
 [node name="Train" type="Node3D" unique_id=330913242]
 script = ExtResource("1_bju55")
@@ -15,4 +32,32 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19999999, 0.27197742)
 [node name="LeverHandle" type="Node3D" parent="SeatAnchor/LeverBase" unique_id=491826228]
 script = ExtResource("2_lomod")
 
-[node name="tram" parent="." unique_id=750244354 instance=ExtResource("3_kfycv")]
+[node name="tram" parent="." unique_id=870704659 instance=ExtResource("3_kfycv")]
+
+[node name="Lever" type="Node3D" parent="." unique_id=377612070]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.37004387, 0.8725765, -0.5148522)
+script = ExtResource("2_lomod")
+
+[node name="Hinge" parent="Lever" unique_id=1956171370 instance=ExtResource("4_3bh8j")]
+hinge_limit_min = -30.0
+hinge_limit_max = 30.0
+
+[node name="InteractableHandle" parent="Lever/Hinge" unique_id=591545166 instance=ExtResource("5_3ccrb")]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Lever/Hinge/InteractableHandle" unique_id=829596943]
+mesh = SubResource("BoxMesh_l5j6f")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Lever/Hinge/InteractableHandle" unique_id=43178371]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.100000024, 0)
+mesh = SubResource("BoxMesh_3bh8j")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Lever/Hinge/InteractableHandle" unique_id=942797574]
+shape = SubResource("BoxShape3D_3bh8j")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Lever/Hinge" unique_id=1776419569]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, -0.14127237, 0)
+mesh = SubResource("CylinderMesh_3bh8j")
+
+[connection signal="hinge_moved" from="Lever/Hinge" to="Lever" method="_on_hinge_hinge_moved"]
+
+[editable path="tram"]
