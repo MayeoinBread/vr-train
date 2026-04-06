@@ -26,8 +26,12 @@ size = Vector3(0.13, 0.03, 0.03)
 [sub_resource type="BoxMesh" id="BoxMesh_srq5j"]
 size = Vector3(0.03, 0.21, 0.03)
 
-[sub_resource type="BoxMesh" id="BoxMesh_lbk85"]
-size = Vector3(0.13, 0.03, 0.03)
+[sub_resource type="CylinderMesh" id="CylinderMesh_gaakl"]
+top_radius = 0.02
+bottom_radius = 0.02
+height = 0.13
+radial_segments = 16
+rings = 0
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_k8o2f"]
 size = Vector3(0.13, 0.03, 0.03)
@@ -64,8 +68,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13, 0)
 mesh = SubResource("BoxMesh_srq5j")
 
 [node name="HandleMesh" type="MeshInstance3D" parent="LeverOrigin/InteractableLever/HingeBody" unique_id=573796524]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.23, 0)
-mesh = SubResource("BoxMesh_lbk85")
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 0.23, 0)
+mesh = SubResource("CylinderMesh_gaakl")
 
 [node name="GrabPointHandLeft" parent="LeverOrigin/InteractableLever/HingeBody/HandleMesh" unique_id=1159136181 instance=ExtResource("2_c4j4g")]
 transform = Transform3D(-4.371138e-08, 1, 0, -0.9303343, -4.0666208e-08, -0.3667123, -0.3667123, -1.6029505e-08, 0.9303343, 0.05, 0.015679196, -0.051972464)

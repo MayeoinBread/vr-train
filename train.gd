@@ -48,3 +48,6 @@ func _process(delta: float) -> void:
 
 func set_throttle(value: float):
 	throttle = clamp(value, -1.0, 1.0)
+
+func get_seat_pos() -> Transform3D:
+	return $SeatAnchor.global_transform

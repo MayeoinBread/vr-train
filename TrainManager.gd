@@ -19,9 +19,10 @@ func _ready() -> void:
 	if track_root:
 		current_segment = track_root.get_node(track_root.start_segment)
 	player.train_throttle_changed.connect(Callable(self, "_on_throttle_changed"))
+	
 	spawn_train()
 	
-func _process(delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if not train or not current_segment:
 		return
 		

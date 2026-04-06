@@ -6,6 +6,11 @@ signal train_throttle_changed(throttle: float)
 func _ready() -> void:
 	$XROrigin3D/LeftHand.input_vector2_changed.connect(Callable(self, "_on_input_vector2_changed"))
 	
+	# TODO see if this shit even actually works
+	# Nope, doesn't exist
+	#$XROrigin3D/LeftHand.smoothing_enabled = false
+	#$XROrigin3D/RightHand.smoothing_enabled = false
+	
 func _on_input_vector2_changed(action_name: String, value: Vector2) -> void:
 	if action_name == "throttle":
 		var throttle_input = -value.y
