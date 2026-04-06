@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://e6exfihj2qti"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_j1eoh"]
+albedo_color = Color(0.5766774, 0, 0, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_qywbh"]
+material = SubResource("StandardMaterial3D_j1eoh")
+top_radius = 0.3
+bottom_radius = 0.3
+height = 0.05
+radial_segments = 8
+rings = 0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_an2pr"]
+albedo_color = Color(0.28485027, 0.28485027, 0.28485027, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_81bs8"]
+material = SubResource("StandardMaterial3D_an2pr")
+top_radius = 0.05
+bottom_radius = 0.05
+
+[node name="StopSignal" type="Node3D" unique_id=1209385197]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1107429670]
+transform = Transform3D(0.92387944, -3.327333e-09, -0.3826834, -0.3826834, -1.6727624e-08, -0.92387944, -3.3273329e-09, 1, -1.6727622e-08, 0, 1.5, 0)
+mesh = SubResource("CylinderMesh_qywbh")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=469229542]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.23, 0)
+mesh = SubResource("CylinderMesh_81bs8")
+
+[node name="Label3D" type="Label3D" parent="." unique_id=103147106]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0.03)
+outline_modulate = Color(0, 0, 0, 0)
+text = "STOP"

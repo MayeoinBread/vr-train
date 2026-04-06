@@ -50,6 +50,7 @@ func build_debug_text() -> String:
 	
 	# --- Core Info ---
 	text += "Speed: %.2f\n" % train.speed
+	text += "Throttle: %.2f\n" % train.throttle
 	text += "Direction: %s\n" % get_direction_string(train.direction)
 	text += "Segment: %s\n" % seg.name
 	text += "Distance: %.2f\n" % tm.distance_along

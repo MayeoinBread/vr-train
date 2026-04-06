@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://crggsdic6ny6n"]
+
+[ext_resource type="Script" uid="uid://cepociqhn58y3" path="res://FeatherSignal.gd" id="1_qywbh"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_j1eoh"]
+albedo_color = Color(0, 0, 0, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_qywbh"]
+material = SubResource("StandardMaterial3D_j1eoh")
+top_radius = 0.3
+bottom_radius = 0.3
+height = 0.2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_an2pr"]
+albedo_color = Color(0.28485027, 0.28485027, 0.28485027, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_81bs8"]
+material = SubResource("StandardMaterial3D_an2pr")
+top_radius = 0.05
+bottom_radius = 0.05
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xlikf"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_464fs"]
+material = SubResource("StandardMaterial3D_xlikf")
+size = Vector3(0.05, 0.4, 0.05)
+
+[node name="FeatherSignal" type="Node3D" unique_id=1209385197 node_paths=PackedStringArray("light_nodes")]
+script = ExtResource("1_qywbh")
+active_index = 0
+light_nodes = [NodePath("Lights/Light_0"), NodePath("Lights/Light_1"), NodePath("Lights/Light_2")]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1107429670]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 1.5, 0)
+mesh = SubResource("CylinderMesh_qywbh")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=469229542]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("CylinderMesh_81bs8")
+
+[node name="Lights" type="Node3D" parent="." unique_id=604412787]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0.1)
+
+[node name="Light_0" type="MeshInstance3D" parent="Lights" unique_id=2117678456]
+mesh = SubResource("BoxMesh_464fs")
+
+[node name="Light_1" type="MeshInstance3D" parent="Lights" unique_id=171457454]
+transform = Transform3D(0.70710677, -0.70710677, 0, 0.70710677, 0.70710677, 0, 0, 0, 1, 0, 0, 0)
+visible = false
+mesh = SubResource("BoxMesh_464fs")
+
+[node name="Light_2" type="MeshInstance3D" parent="Lights" unique_id=690418867]
+transform = Transform3D(0.7071067, 0.7071067, 0, -0.7071067, 0.7071067, 0, 0, 0, 1, 0, 0, 0)
+visible = false
+mesh = SubResource("BoxMesh_464fs")

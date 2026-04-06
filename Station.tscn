@@ -1,13 +1,42 @@
 [gd_scene format=3 uid="uid://dnrluif7qsw8x"]
 
 [ext_resource type="Script" uid="uid://cna42bfm4tdsn" path="res://Station.gd" id="1_ad2ja"]
+[ext_resource type="PackedScene" uid="uid://e6exfihj2qti" path="res://StopSignal.tscn" id="2_na7ix"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_na7ix"]
+albedo_color = Color(0.16745102, 0.16745102, 0.16745102, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_na7ix"]
+material = SubResource("StandardMaterial3D_na7ix")
 size = Vector3(10, 0.5, 16)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dnvvb"]
+albedo_color = Color(0, 0, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ct0gp"]
+material = SubResource("StandardMaterial3D_dnvvb")
+size = Vector3(5, 0.5, 0.2)
 
 [node name="Station" type="Node3D" unique_id=801352876]
 script = ExtResource("1_ad2ja")
+stop_distance = 15.0
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1889258512]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.25, -10)
 mesh = SubResource("BoxMesh_na7ix")
+
+[node name="StopSignal" parent="." unique_id=1209385197 instance=ExtResource("2_na7ix")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, -15)
+
+[node name="StationSign" type="Node3D" parent="." unique_id=2024637618]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 3, -8)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StationSign" unique_id=566414952]
+mesh = SubResource("BoxMesh_ct0gp")
+
+[node name="Label3D" type="Label3D" parent="StationSign" unique_id=1716382214]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.11)
+modulate = Color(0.73314595, 0.7331456, 0, 1)
+text = "Unnamed Station"
+font_size = 56
+outline_size = 3

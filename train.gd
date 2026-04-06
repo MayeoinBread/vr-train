@@ -46,6 +46,9 @@ func _process(delta: float) -> void:
 	else:
 		direction = Direction.STOPPED
 
+func is_stopped() -> bool:
+	return abs(speed) < 0.01
+
 func set_throttle(value: float):
 	throttle = clamp(value, -1.0, 1.0)
 

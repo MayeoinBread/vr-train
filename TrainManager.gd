@@ -8,7 +8,12 @@ extends Node3D
 
 @export var marker_distance := 5.0  # meters along branch
 
+@export var station_timetable: Array[String] = []
+var timetable_index := 0
+
 var junction_markers: Array[MeshInstance3D] = []
+
+var was_stopped_at_station := false
 
 var train: Node3D
 var current_segment: Node3D
@@ -21,6 +26,14 @@ func _ready() -> void:
 	player.train_throttle_changed.connect(Callable(self, "_on_throttle_changed"))
 	
 	spawn_train()
+
+func _process(delta: float) -> void:
+	var now := is_stopped_at_station()
+	
+	if now and not was_stopped_at_station:
+		_on_station_stop(current_segment)
+	
+	was_stopped_at_station = now
 	
 func _physics_process(delta: float) -> void:
 	if not train or not current_segment:
@@ -51,17 +64,15 @@ func switch_junction():
 	if not train or not current_segment:
 		return
 	
-	if not can_switch_junction():
+	if not within_toggle_distance():
 		return
 	
 	if train.direction == train.Direction.FORWARD:
-		var count = current_segment.next_segments.size()
-		if count > 1:
-			current_segment.next_junction_index = (current_segment.next_junction_index + 1) % count
+		if current_segment.can_switch_junction(1):
+			current_segment.switch_junction(1)
 	elif train.direction == train.Direction.REVERSE:
-		var count = current_segment.previous_segments.size()
-		if count > 1:
-			current_segment.previous_junction_index = (current_segment.previous_junction_index + 1) % count
+		if current_segment.can_switch_junction(-1):
+			current_segment.switch_junction(-1)
 	
 	update_junction_markers()
 
@@ -179,11 +190,10 @@ func update_junction_markers():
 		show_backward_markers()
 
 func show_forward_markers():
-	var count = current_segment.next_segments.size()
-	if count == 0:
+	if not current_segment.can_switch_junction(1):
 		return
 	
-	for i in count:
+	for i in current_segment.next_segments.size():
 		var seg = current_segment.get_next_segment(i)
 		if not seg:
 			continue
@@ -201,11 +211,10 @@ func show_forward_markers():
 		junction_markers.append(marker)
 
 func show_backward_markers():
-	var count = current_segment.previous_segments.size()
-	if count == 0:
+	if not current_segment.can_switch_junction(-1):
 		return
 
-	for i in count:
+	for i in current_segment.previous_segments.size():
 		var seg = current_segment.get_previous_segment(i)
 		if not seg:
 			continue
@@ -223,9 +232,13 @@ func show_backward_markers():
 
 		junction_markers.append(marker)
 
-func can_switch_junction() -> bool:
+func within_toggle_distance() -> bool:
 	var length = current_segment.path.curve.get_baked_length()
-	return distance_along < (length - current_segment.junction_commit_distance)
+	if train.direction == train.Direction.FORWARD:
+		return distance_along < (length - current_segment.junction_commit_distance)
+	elif train.direction == train.Direction.REVERSE:
+		return distance_along > current_segment.junction_commit_distance
+	return false
 
 func get_station_from_segment(segment: Node):
 	if segment:
@@ -273,3 +286,24 @@ func get_next_station_info(lookahead_segments: int = 5) -> Dictionary:
 			break
 	
 	return info
+
+func is_stopped_at_station() -> bool:
+	if not current_segment:
+		return false
+	if not current_segment.is_station:
+		return false
+	if not train.is_stopped():
+		return false
+	return current_segment.is_train_stopped_at_station(distance_along)
+
+func _on_station_stop(segment):
+	if timetable_index >= station_timetable.size():
+		return
+	
+	var expected = station_timetable[timetable_index]
+	
+	if segment.station.station_name == expected:
+		print("Correct station:", expected)
+		timetable_index += 1
+	else:
+		print("Wrong station. Expected:", expected, "Got:", segment.station.station_name)
