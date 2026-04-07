@@ -146,6 +146,9 @@ func attach_player_to_train() -> void:
 	
 	# Reset local transform so player snaps to seat
 	player.transform = Transform3D.IDENTITY
+	
+	# Update XROrigin3D:
+	player.on_seated()
 
 func switch_train(new_train_scene: PackedScene) -> void:
 	# Remove old
