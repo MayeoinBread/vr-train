@@ -18,6 +18,7 @@ var was_stopped_at_station := false
 var train: Node3D
 var current_segment: Node3D
 var distance_along := 0.0
+var previous_train_transform: Transform3D
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -26,8 +27,9 @@ func _ready() -> void:
 	player.train_throttle_changed.connect(Callable(self, "_on_throttle_changed"))
 	
 	spawn_train()
+	previous_train_transform = train.global_transform
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	var now := is_stopped_at_station()
 	
 	if now and not was_stopped_at_station:
@@ -58,7 +60,26 @@ func _physics_process(delta: float) -> void:
 		move_to_previous_segment()
 		return
 	
-	update_train_transform()
+	# Sample target transform on current segment
+	var target_transform = current_segment.global_transform * curve.sample_baked_with_rotation(distance_along)
+	
+	# Compute delta motion relative to previous frame
+	var delta_transform = previous_train_transform.affine_inverse() * target_transform
+	
+	# Apply delta to the world (train + environment)
+	move_world_relative_to_player(delta_transform)
+	
+	# Store for next frame
+	previous_train_transform = train.global_transform
+
+func move_world_relative_to_player(delta_transform: Transform3D) -> void:
+	# Compute inverse so objects move opposite to train movement
+	var inv_delta = delta_transform.affine_inverse()
+	
+	# Move environment or other train children relative to player
+	for obj in get_tree().get_nodes_in_group("movable_world"):
+		var local_offset = player.global_transform.affine_inverse() * obj.global_transform
+		obj.global_transform = player.global_transform * inv_delta * local_offset
 
 func switch_junction():
 	if not train or not current_segment:
@@ -73,25 +94,35 @@ func switch_junction():
 	elif train.direction == train.Direction.REVERSE:
 		if current_segment.can_switch_junction(-1):
 			current_segment.switch_junction(-1)
-	
-	update_junction_markers()
 
 func move_to_next_segment():
+	var old_transform = previous_train_transform
+	
 	var next = choose_next_segment()
 	
 	if next:
 		current_segment = next
 		distance_along = 0.0
+		var new_start = current_segment.global_transform * current_segment.path.curve.sample_baked_with_rotation(distance_along)
+		var delta_transform = old_transform.affine_inverse() * new_start
+		move_world_relative_to_player(delta_transform)
+		previous_train_transform = new_start
 	else:
 		distance_along = current_segment.path.curve.get_baked_length()
 		train.speed = 0.0
 
 func move_to_previous_segment():
+	var old_transform = previous_train_transform
+	
 	var previous = choose_previous_segment()
 	
 	if previous:
 		current_segment = previous
 		distance_along = current_segment.path.curve.get_baked_length()
+		var new_start = current_segment.global_transform * current_segment.path.curve.sample_baked_with_rotation(distance_along)
+		var delta_transform = old_transform.affine_inverse() * new_start
+		move_world_relative_to_player(delta_transform)
+		previous_train_transform = new_start
 	else:
 		distance_along = 0.0
 		train.speed = 0.0
@@ -123,29 +154,11 @@ func spawn_train() -> void:
 	current_segment = track_root.get_node(track_root.start_segment)
 	distance_along = start_distance
 	
-	update_train_transform()
 	call_deferred("attach_player_to_train")
-
-func update_train_transform() -> void:
-	if not current_segment:
-		return
-	
-	var curve = current_segment.path.curve
-	var local_transform = curve.sample_baked_with_rotation(distance_along)
-	# NOTE would need this if the Path3D itself was rotated in the Segment scene?
-	#train.global_transform.origin = current_segment.to_global(local_transform.origin)
-	#train.global_transform.basis = current_segment.global_transform.basis * local_transform.basis
-	train.global_transform = current_segment.global_transform * local_transform
 
 func attach_player_to_train() -> void:
 	var seat = train.get_node("SeatAnchor")
-	
-	# Reparent player to train
-	player.get_parent().remove_child(player)
-	seat.add_child(player)
-	
-	# Reset local transform so player snaps to seat
-	player.transform = Transform3D.IDENTITY
+	player.set_seat_anchor(seat)
 	
 	# Update XROrigin3D:
 	player.on_seated()
@@ -158,82 +171,6 @@ func switch_train(new_train_scene: PackedScene) -> void:
 	# Spawn new
 	train_scene = new_train_scene
 	spawn_train()
-
-func create_marker(color: Color) -> MeshInstance3D:
-	var m = MeshInstance3D.new()
-	var mesh = SphereMesh.new()
-	mesh.radius = 0.2
-	m.mesh = mesh
-	
-	var mat = StandardMaterial3D.new()
-	mat.albedo_color = color
-	mesh.material = mat
-	
-	add_child(m)
-	return m
-
-func clear_markers():
-	for m in junction_markers:
-		if is_instance_valid(m):
-			m.queue_free()
-	junction_markers.clear()
-
-func update_junction_markers():
-	clear_markers()
-	
-	if not current_segment:
-		return
-	
-	if train.direction == train.Direction.FORWARD:
-		show_forward_markers()
-	elif train.direction == train.Direction.REVERSE:
-		show_backward_markers()
-	else:
-		show_forward_markers()
-		show_backward_markers()
-
-func show_forward_markers():
-	if not current_segment.can_switch_junction(1):
-		return
-	
-	for i in current_segment.next_segments.size():
-		var seg = current_segment.get_next_segment(i)
-		if not seg:
-			continue
-		
-		# position slightly INTO the next segment
-		var t = seg.get_point_on_curve(marker_distance)
-		
-		var color = Color(0, 1, 0)
-		if i == current_segment.next_junction_index:
-			color = Color(1, 1, 0)
-		
-		var marker = create_marker(color)
-		marker.global_transform = t
-		
-		junction_markers.append(marker)
-
-func show_backward_markers():
-	if not current_segment.can_switch_junction(-1):
-		return
-
-	for i in current_segment.previous_segments.size():
-		var seg = current_segment.get_previous_segment(i)
-		if not seg:
-			continue
-
-		# position slightly INTO the previous segment (from its end)
-		var length = seg.path.curve.get_baked_length()
-		var t = seg.get_point_on_curve(length - marker_distance)
-
-		var color = Color(1, 0, 0)
-		if i == current_segment.previous_junction_index:
-			color = Color(1, 1, 0)
-
-		var marker = create_marker(color)
-		marker.global_transform = t
-
-		junction_markers.append(marker)
 
 func within_toggle_distance() -> bool:
 	var length = current_segment.path.curve.get_baked_length()
@@ -274,8 +211,6 @@ func get_next_station_info(lookahead_segments: int = 5) -> Dictionary:
 			break
 			
 		distance += remaining_in_segment
-		
-		# TODO distance should be to stop point of station, not the end of it...
 
 		if current.station:
 			info.station = current.station

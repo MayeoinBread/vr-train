@@ -50,22 +50,22 @@ func generate_track() -> void:
 		place_sleeper(m_transform)
 		sleeper_distance += sleeper_spacing
 		
-func place_sleeper(transform: Transform3D):
+func place_sleeper(m_transform: Transform3D):
 	var sleeper = MeshInstance3D.new()
 	
 	var mesh = BoxMesh.new()
 	mesh.size = Vector3(sleeper_width, 0.125, sleeper_length)
 	sleeper.mesh = mesh
 	
-	sleeper.transform = transform
+	sleeper.transform = m_transform
 	
 	add_child(sleeper)
 
-func place_rail(transform: Transform3D):
-	var right = transform.basis.x.normalized()
+func place_rail(m_transform: Transform3D):
+	var right = m_transform.basis.x.normalized()
 	
-	var left_transform = transform
-	var right_transform = transform
+	var left_transform = m_transform
+	var right_transform = m_transform
 	
 	left_transform.origin -= right * rail_offset
 	right_transform.origin += right * rail_offset
