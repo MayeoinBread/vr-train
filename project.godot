@@ -24,6 +24,10 @@ XRToolsRumbleManager="*uid://by853dk86g1qw"
 
 enabled=PackedStringArray("res://addons/godot-xr-tools/plugin.cfg")
 
+[global_group]
+
+movable_world=""
+
 [input]
 
 throttle_up={

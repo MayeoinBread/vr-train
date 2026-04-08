@@ -4,7 +4,6 @@
 [ext_resource type="Script" uid="uid://csvvaa01ciwy7" path="res://Main.gd" id="1_lquwl"]
 [ext_resource type="PackedScene" uid="uid://cm1b50f6vx3vg" path="res://character.tscn" id="2_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://dh0xxjn6wioax" path="res://train.tscn" id="2_1bvp3"]
-[ext_resource type="PackedScene" uid="uid://clmrg4nj2p7d" path="res://DebugUI.tscn" id="2_7mycd"]
 [ext_resource type="PackedScene" uid="uid://bviimvilp1de8" path="res://track.tscn" id="4_lquwl"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_0xm2m"]
@@ -36,9 +35,6 @@ shadow_normal_bias = 0.05
 directional_shadow_mode = 1
 directional_shadow_fade_start = 0.01
 directional_shadow_max_distance = 1.0
-
-[node name="DebugUI" parent="." unique_id=408804422 node_paths=PackedStringArray("train_manager") instance=ExtResource("2_7mycd")]
-train_manager = NodePath("../TrainManager")
 
 [node name="TrainManager" type="Node3D" parent="." unique_id=1687573989 node_paths=PackedStringArray("player", "track_root")]
 script = ExtResource("1_0xm2m")

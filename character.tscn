@@ -3,12 +3,15 @@
 [ext_resource type="Script" uid="uid://lkyei0b6vwx6" path="res://Player.gd" id="1_oolk3"]
 [ext_resource type="PackedScene" uid="uid://bdwmserhqai5h" path="res://addons/godot-xr-tools/hands/scenes/lowpoly/left_physics_hand_low.tscn" id="2_atbvg"]
 [ext_resource type="PackedScene" uid="uid://b4ysuy43poobf" path="res://addons/godot-xr-tools/functions/function_pickup.tscn" id="2_pjt0s"]
+[ext_resource type="PackedScene" uid="uid://clmrg4nj2p7d" path="res://DebugUI.tscn" id="2_px5sl"]
 [ext_resource type="PackedScene" uid="uid://btf05hjpw6k05" path="res://addons/godot-xr-tools/hands/scenes/lowpoly/right_physics_hand_low.tscn" id="4_cxxw8"]
 
 [node name="Character" type="Node3D" unique_id=1919104733]
 script = ExtResource("1_oolk3")
 
 [node name="XROrigin3D" type="XROrigin3D" parent="." unique_id=1237878384]
+
+[node name="DebugUI" parent="XROrigin3D" unique_id=808809629 instance=ExtResource("2_px5sl")]
 
 [node name="XRCamera3D" type="XRCamera3D" parent="XROrigin3D" unique_id=149473403]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 0)

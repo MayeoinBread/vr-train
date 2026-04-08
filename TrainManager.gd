@@ -245,3 +245,43 @@ func _on_station_stop(segment):
 		timetable_index += 1
 	else:
 		print("Wrong station. Expected:", expected, "Got:", segment.station.station_name)
+
+func get_direction_string(dir):
+	match dir:
+		0: return "Forward"
+		1: return "Reverse"
+		2: return "Stopped"
+	return "Unknown"
+
+func build_debug_text():
+	if not current_segment:
+		return "No segment"
+	
+	var text := ""
+	
+	# --- Core Info ---
+	text += "Speed: %.2f\n" % train.speed
+	text += "Throttle: %.2f\n" % train.throttle
+	text += "Direction: %s\n" % get_direction_string(train.direction)
+	text += "Segment: %s\n" % current_segment.name
+	text += "Distance: %.2f\n" % distance_along
+	
+	# --- Junction ---
+	text += "\n-- Junction --\n"
+	
+	if train.direction == 1:
+		text += "Next count: %d\n" % current_segment.next_segments.size()
+		text += "Selected: %d\n" % current_segment.next_junction_index
+	else:
+		text += "Prev count: %d\n" % current_segment.previous_segments.size()
+		text += "Selected: %d\n" % current_segment.previous_junction_index
+	
+	# --- Station ---
+	text += "\n-- Station --\n"
+	var station_info = get_next_station_info(5)
+	if station_info.station:
+		text += "Next station: %s\nDistance: %.2f m" % [station_info.station.station_name, station_info.distance]
+	else:
+		text += "No station ahead"
+	
+	return text

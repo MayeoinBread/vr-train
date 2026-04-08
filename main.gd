@@ -5,6 +5,8 @@ var xr_interface: XRInterface
 func _ready():
 	await get_tree().process_frame
 	initialise_xr()
+	
+	$Character.set_ui_source($TrainManager)
 
 func initialise_xr():
 	print("XR interfaces: ", XRServer.get_interfaces())

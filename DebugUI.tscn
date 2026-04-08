@@ -5,6 +5,19 @@
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_egwsh"]
 bg_color = Color(0, 0, 0, 0.6)
 
+[sub_resource type="ViewportTexture" id="ViewportTexture_egwsh"]
+viewport_path = NodePath("DebugUI_VR/SubViewport")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wm85p"]
+resource_local_to_scene = true
+transparency = 1
+shading_mode = 0
+albedo_texture = SubResource("ViewportTexture_egwsh")
+
+[sub_resource type="QuadMesh" id="QuadMesh_r6kf7"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_wm85p")
+
 [node name="DebugUI" type="Node3D" unique_id=808809629]
 script = ExtResource("1_egwsh")
 
@@ -31,11 +44,12 @@ theme_override_font_sizes/font_size = 32
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="DebugUI_VR" unique_id=882856915]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -1)
+mesh = SubResource("QuadMesh_r6kf7")
 
 [node name="SubViewport" type="SubViewport" parent="DebugUI_VR" unique_id=1053315167]
-use_xr = true
 transparent_bg = true
-size = Vector2i(0, 0)
+size = Vector2i(1024, 512)
+render_target_update_mode = 4
 
 [node name="Control" type="Control" parent="DebugUI_VR/SubViewport" unique_id=892844130]
 layout_mode = 3
@@ -43,12 +57,8 @@ anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="Panel" type="Panel" parent="DebugUI_VR/SubViewport/Control" unique_id=1002595594]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="Label" type="Label" parent="DebugUI_VR/SubViewport/Control/Panel" unique_id=1738301217]
+[node name="Label" type="Label" parent="DebugUI_VR/SubViewport/Control" unique_id=1738301217]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0
+text = "Sample Text"
