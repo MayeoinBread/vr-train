@@ -45,7 +45,6 @@ func can_switch_junction(direction: int) -> bool:
 func switch_junction(direction: int):
 	if direction == 1:
 		next_junction_index = (next_junction_index + 1) % next_segments.size()
-		# TODO need to handle backwards too
 		update_signal(1)
 	elif direction == -1:
 		previous_junction_index = (previous_junction_index + 1) % previous_segments.size()

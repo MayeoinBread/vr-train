@@ -5,6 +5,8 @@ signal train_throttle_changed(throttle: float)
 var seat_anchor: Node3D = null
 var seat_offset: Transform3D = Transform3D.IDENTITY
 
+@export var throttle_step = 0.1
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	var xr_interface = XRServer.primary_interface
@@ -26,13 +28,14 @@ func _on_input_vector2_changed(action_name: String, value: Vector2) -> void:
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	# TODO temporary keyboard input
-	if Input.is_action_pressed("ui_up"):
-		emit_signal("train_throttle_changed", 0.4)
-	if Input.is_action_pressed("ui_down"):
-		emit_signal("train_throttle_changed", -0.4)
-	if Input.is_action_pressed("reset_throttle"):
-		emit_signal("train_throttle_changed", 0.0)
+	if Input.is_action_just_pressed("ui_up"):
+		emit_signal("train_throttle_changed", throttle_step)
+	if Input.is_action_just_pressed("ui_down"):
+		emit_signal("train_throttle_changed", -throttle_step)
 	
+	if Input.is_action_just_pressed("reset_throttle"):
+		emit_signal("train_throttle_changed", 0.0, true)
+
 	if seat_anchor:
 		global_transform = seat_anchor.global_transform * seat_offset
 

@@ -1,10 +1,11 @@
 [gd_scene format=3 uid="uid://beub3p03djlqk"]
 
 [ext_resource type="Script" uid="uid://b6uvtb4id8wnj" path="res://TrainManager.gd" id="1_0xm2m"]
-[ext_resource type="Script" uid="uid://csvvaa01ciwy7" path="res://Main.gd" id="1_lquwl"]
+[ext_resource type="Script" uid="uid://csvvaa01ciwy7" path="res://main.gd" id="1_lquwl"]
 [ext_resource type="PackedScene" uid="uid://cm1b50f6vx3vg" path="res://character.tscn" id="2_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://dh0xxjn6wioax" path="res://train.tscn" id="2_1bvp3"]
 [ext_resource type="PackedScene" uid="uid://bviimvilp1de8" path="res://track.tscn" id="4_lquwl"]
+[ext_resource type="Script" uid="uid://cjs8k0bi2vchv" path="res://DesktopChar.gd" id="6_7mycd"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_0xm2m"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -39,10 +40,15 @@ directional_shadow_max_distance = 1.0
 [node name="TrainManager" type="Node3D" parent="." unique_id=1687573989 node_paths=PackedStringArray("player", "track_root")]
 script = ExtResource("1_0xm2m")
 train_scene = ExtResource("2_1bvp3")
-player = NodePath("../Character")
+player = NodePath("../XRCharacter")
 track_root = NodePath("../Track")
 station_timetable = Array[String](["Station 1"])
 
 [node name="Track" parent="." unique_id=1060532867 groups=["movable_world"] instance=ExtResource("4_lquwl")]
 
-[node name="Character" parent="." unique_id=1919104733 instance=ExtResource("2_0xm2m")]
+[node name="DesktopChar" type="Camera3D" parent="." unique_id=2045594721]
+transform = Transform3D(1, 0, 0, 0, 0.97972244, 0.20035982, 0, -0.20035982, 0.97972244, 0, 1.1223927, 0)
+script = ExtResource("6_7mycd")
+
+[node name="XRCharacter" parent="." unique_id=1919104733 instance=ExtResource("2_0xm2m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.8, 0)

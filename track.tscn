@@ -12,23 +12,9 @@ _data = {
 }
 point_count = 2
 
-[sub_resource type="Curve3D" id="Curve3D_vr403"]
-_data = {
-"points": PackedVector3Array(0.0178895, 0, 12.363113, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7.8437567, 5.722046e-05, -0.021463394, 0, 0, -20),
-"tilts": PackedFloat32Array(0, 0)
-}
-point_count = 2
-
 [sub_resource type="Curve3D" id="Curve3D_ucvjy"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, -10, 0, 0, 0, 0, 0, 10, 0, 0, 0, 5, 0, -20),
-"tilts": PackedFloat32Array(0, 0)
-}
-point_count = 2
-
-[sub_resource type="Curve3D" id="Curve3D_82y7p"]
-_data = {
-"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -20),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
@@ -47,14 +33,42 @@ _data = {
 }
 point_count = 2
 
+[sub_resource type="Curve3D" id="Curve3D_vr403"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, -10, 0, 0, 0, 10, 0, 0, 0, 0, 0, -20, 0, -20),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_82y7p"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, -10, 0, 0, 0, 0, 0, 10, 0, 0, -10, -10, 0, -30, 0, 0, 10, 0, 0, 0, 0, 0, -60),
+"tilts": PackedFloat32Array(0, 0, 0)
+}
+point_count = 3
+
+[sub_resource type="Curve3D" id="Curve3D_l1aip"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, -15, 0, 0, 0, 0, 0, -15, 0, 0, 0, -20, 0, 0, 0, 0, 0, 0, 0, 10, -20, 0, 50, 10, 0, 0, 0, 0, 0, -40, 0, 70),
+"tilts": PackedFloat32Array(0, 0, 0, 0)
+}
+point_count = 4
+
+[sub_resource type="Curve3D" id="Curve3D_t0gok"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, -10, 0, 0, 0, 0, 0, 10, 0, 0, -20, 20, 0, -60, 0, 0, -20, 0, 0, 0, -10, 0, -59.75),
+"tilts": PackedFloat32Array(0, 0, 0)
+}
+point_count = 3
+
 [node name="Track" type="Node3D" unique_id=1060532867]
 script = ExtResource("1_phvr8")
 start_segment = NodePath("TrackSegment")
 
-[node name="TrackSegment" parent="." unique_id=469804477 node_paths=PackedStringArray("next_segments") instance=ExtResource("1_mll3j")]
+[node name="TrackSegment" parent="." unique_id=469804477 node_paths=PackedStringArray("next_segments", "previous_segments") instance=ExtResource("1_mll3j")]
 next_segments = [NodePath("../TrackSegment2"), NodePath("../TrackSegment3")]
 next_directions = Array[String](["straight", "right"])
-previous_directions = null
+previous_segments = [NodePath("../TrackSegment11")]
 feather_signal = NodePath("FeatherSignal")
 is_switch = true
 
@@ -69,18 +83,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -20)
 next_segments = [NodePath("../TrackSegment4")]
 next_directions = Array[String]([])
 previous_segments = [NodePath("../TrackSegment")]
-previous_directions = null
 feather_signal = NodePath("")
-
-[node name="Path3D" parent="TrackSegment2" index="0" unique_id=1582978415]
-curve = SubResource("Curve3D_vr403")
 
 [node name="TrackSegment3" parent="." unique_id=1193161442 node_paths=PackedStringArray("next_segments", "previous_segments") instance=ExtResource("1_mll3j")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -20)
 next_segments = [NodePath("../TrackSegment5")]
 next_directions = Array[String]([])
 previous_segments = [NodePath("../TrackSegment")]
-previous_directions = null
 feather_signal = NodePath("")
 
 [node name="Path3D" parent="TrackSegment3" index="0" unique_id=1582978415]
@@ -91,18 +100,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -40)
 next_segments = [NodePath("../TrackSegment7")]
 next_directions = Array[String]([])
 previous_segments = [NodePath("../TrackSegment2")]
-previous_directions = null
 feather_signal = NodePath("")
-
-[node name="Path3D" parent="TrackSegment4" index="0" unique_id=1582978415]
-curve = SubResource("Curve3D_82y7p")
 
 [node name="TrackSegment5" parent="." unique_id=679016745 node_paths=PackedStringArray("next_segments", "previous_segments", "station") instance=ExtResource("1_mll3j")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -40)
 next_segments = [NodePath("../TrackSegment6")]
 next_directions = Array[String]([])
 previous_segments = [NodePath("../TrackSegment3")]
-previous_directions = null
 feather_signal = NodePath("")
 station = NodePath("Station")
 is_station = true
@@ -118,7 +122,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -60)
 next_segments = [NodePath("../TrackSegment8")]
 next_directions = Array[String]([])
 previous_segments = [NodePath("../TrackSegment5")]
-previous_directions = null
 feather_signal = NodePath("")
 
 [node name="Path3D" parent="TrackSegment6" index="0" unique_id=1582978415]
@@ -129,19 +132,55 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -60)
 next_segments = [NodePath("../TrackSegment8")]
 next_directions = Array[String]([])
 previous_segments = [NodePath("../TrackSegment4")]
-previous_directions = null
 feather_signal = NodePath("")
 
-[node name="TrackSegment8" parent="." unique_id=1187892672 node_paths=PackedStringArray("previous_segments") instance=ExtResource("1_mll3j")]
+[node name="TrackSegment8" parent="." unique_id=1187892672 node_paths=PackedStringArray("next_segments", "previous_segments") instance=ExtResource("1_mll3j")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -80)
+next_segments = [NodePath("../TrackSegment9")]
 next_directions = Array[String]([])
 previous_segments = [NodePath("../TrackSegment7"), NodePath("../TrackSegment6")]
 previous_directions = Array[String](["straight", "left"])
 feather_signal = NodePath("")
+is_switch = true
+
+[node name="Path3D" parent="TrackSegment8" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_vr403")
+
+[node name="TrackSegment9" parent="." unique_id=1771322911 node_paths=PackedStringArray("next_segments", "previous_segments") instance=ExtResource("1_mll3j")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -20.000004, 0, -100)
+next_segments = [NodePath("../TrackSegment10")]
+next_directions = Array[String]([])
+previous_segments = [NodePath("../TrackSegment8")]
+feather_signal = NodePath("")
+
+[node name="Path3D" parent="TrackSegment9" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_82y7p")
+
+[node name="TrackSegment10" parent="." unique_id=1711511661 node_paths=PackedStringArray("next_segments", "previous_segments") instance=ExtResource("1_mll3j")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -80, 0, -100)
+next_segments = [NodePath("../TrackSegment11")]
+next_directions = Array[String]([])
+previous_segments = [NodePath("../TrackSegment9")]
+feather_signal = NodePath("")
+
+[node name="Path3D" parent="TrackSegment10" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_l1aip")
+
+[node name="TrackSegment11" parent="." unique_id=1898502870 node_paths=PackedStringArray("next_segments", "previous_segments") instance=ExtResource("1_mll3j")]
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, -10, 0, -59.75)
+next_segments = [NodePath("../TrackSegment")]
+next_directions = Array[String]([])
+previous_segments = [NodePath("../TrackSegment10")]
+feather_signal = NodePath("")
+
+[node name="Path3D" parent="TrackSegment11" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_t0gok")
 
 [editable path="TrackSegment"]
-[editable path="TrackSegment2"]
 [editable path="TrackSegment3"]
-[editable path="TrackSegment4"]
 [editable path="TrackSegment5"]
 [editable path="TrackSegment6"]
+[editable path="TrackSegment8"]
+[editable path="TrackSegment9"]
+[editable path="TrackSegment10"]
+[editable path="TrackSegment11"]

@@ -1,0 +1,37 @@
+[gd_scene format=3 uid="uid://djjfkoqefkpgc"]
+
+[ext_resource type="Script" uid="uid://c6e8khdu6gy36" path="res://LabelStatScreen.gd" id="1_36ryt"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_38u64"]
+albedo_color = Color(0, 0, 0, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_46ywn"]
+material = SubResource("StandardMaterial3D_38u64")
+size = Vector2(0.3, 0.1)
+
+[node name="LabelStatScreen" type="Node3D" unique_id=1374963758]
+script = ExtResource("1_36ryt")
+
+[node name="Background" type="MeshInstance3D" parent="." unique_id=804131041]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+mesh = SubResource("PlaneMesh_46ywn")
+
+[node name="TextLabel" type="Label3D" parent="." unique_id=403897331]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.01, 0, 0.001)
+pixel_size = 0.001
+text = "Label"
+font_size = 16
+outline_size = 2
+horizontal_alignment = 2
+autowrap_mode = 1
+width = 130.0
+
+[node name="TextValue" type="Label3D" parent="." unique_id=668297587]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.01, 0, 0.001)
+pixel_size = 0.001
+text = "Value"
+font_size = 16
+outline_size = 2
+horizontal_alignment = 0
+autowrap_mode = 1
+width = 130.0

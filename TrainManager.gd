@@ -24,6 +24,7 @@ var previous_train_transform: Transform3D
 func _ready() -> void:
 	if track_root:
 		current_segment = track_root.get_node(track_root.start_segment)
+	
 	player.train_throttle_changed.connect(Callable(self, "_on_throttle_changed"))
 	
 	spawn_train()
@@ -141,8 +142,8 @@ func choose_previous_segment():
 	var index = current_segment.previous_junction_index
 	return current_segment.get_previous_segment(index)
 
-func _on_throttle_changed(value: float) -> void:
-	train.set_throttle(value)
+func _on_throttle_changed(value: float, reset := false) -> void:
+	train.set_throttle(value, reset)
 	
 func spawn_train() -> void:
 	if not train_scene:
@@ -269,7 +270,7 @@ func build_debug_text():
 	# --- Junction ---
 	text += "\n-- Junction --\n"
 	
-	if train.direction == 1:
+	if train.direction == train.Direction.FORWARD:
 		text += "Next count: %d\n" % current_segment.next_segments.size()
 		text += "Selected: %d\n" % current_segment.next_junction_index
 	else:

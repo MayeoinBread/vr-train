@@ -4,18 +4,23 @@
 [ext_resource type="PackedScene" uid="uid://b65a02vsdi83k" path="res://PushButton.tscn" id="3_e27fj"]
 [ext_resource type="PackedScene" uid="uid://bhegfhdap0y38" path="res://tram.blend" id="3_kfycv"]
 [ext_resource type="PackedScene" uid="uid://bx6mq0qldok00" path="res://LeverThrottle.tscn" id="4_e27fj"]
+[ext_resource type="PackedScene" uid="uid://djjfkoqefkpgc" path="res://LabelStatScreen.tscn" id="5_3bh8j"]
 
 [node name="Train" type="Node3D" unique_id=330913242]
 script = ExtResource("1_bju55")
 
 [node name="SeatAnchor" type="Node3D" parent="." unique_id=1844108184]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, -0.03)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.03)
 
 [node name="LeverThrottle" parent="." unique_id=1302487333 node_paths=PackedStringArray("train") instance=ExtResource("4_e27fj")]
-transform = Transform3D(1, 0, 0, 0, 0.8660254, -0.5, 0, 0.5, 0.8660254, 0.2122842, 0.7721076, -0.5274418)
+transform = Transform3D(1, 0, 0, 0, 0.8660254, -0.5, 0, 0.5, 0.8660254, 0.15, 0.772, -0.527)
 train = NodePath("..")
 
 [node name="JunctionButton" parent="." unique_id=1106112543 instance=ExtResource("3_e27fj")]
 transform = Transform3D(1, 0, 0, 0, 0.9659258, -0.25881904, 0, 0.25881904, 0.9659258, -0.1366787, 0.76350754, -0.5206845)
 
 [node name="tram" parent="." unique_id=870704659 instance=ExtResource("3_kfycv")]
+
+[node name="SpeedScreen" parent="tram" unique_id=1374963758 instance=ExtResource("5_3bh8j")]
+transform = Transform3D(1, 0, 0, 0, 0.42261827, 0.9063077, 0, -0.9063077, 0.42261827, 0.42557713, 0.76166403, -0.5307158)
+label_val = "Speed"
