@@ -1,24 +1,56 @@
 extends Node3D
 
-var speed := 0.0
-var acceleration := 2.0
-var max_speed := 20.0
+@export var acceleration := 2.0
+@export var deceleration := 3.0
+@export var max_speed := 20.0
 
-@onready var lever = $SeatAnchor/LeverBase/LeverHandle
+@export var train_manager: Node = null
+
+@onready var lever_throttle = $LeverThrottle
+
+var throttle := 0.0  # -1 to +1
+
+var speed := 0.0
+
+enum Direction {
+	FORWARD,
+	REVERSE,
+	STOPPED
+}
+
+var direction: Direction = Direction.STOPPED
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	pass # Replace with function body.
+	$JunctionButton.pressed.connect(_on_junction_button_pressed)
 
+func _on_junction_button_pressed():
+	if train_manager:
+		train_manager.switch_junction()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	pass
+	if throttle > 0.0:
+		speed += acceleration * throttle * delta
+	elif throttle < 0.0:
+		speed += deceleration * throttle * delta
+	else:
+		speed = move_toward(speed, 0.0, deceleration * delta)
+	
+	speed = clamp(speed, -max_speed, max_speed)
+	
+	if speed > 0.01:
+		direction = Direction.FORWARD
+	elif speed < -0.01:
+		direction = Direction.REVERSE
+	else:
+		direction = Direction.STOPPED
 
-func update_movement(input_throttle: float, delta: float) -> void:
-	speed += input_throttle * acceleration * delta
-	speed = clamp(speed, 0.0, max_speed)
-	print(speed)
+func is_stopped() -> bool:
+	return abs(speed) < 0.01
 
-func get_throttle_input() -> float:
-	return lever.get_value()
+func set_throttle(value: float):
+	throttle = clamp(value, -1.0, 1.0)
+
+func get_seat_pos() -> Transform3D:
+	return $SeatAnchor.global_transform

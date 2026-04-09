@@ -1,7 +1,8 @@
 [gd_scene format=3 uid="uid://beub3p03djlqk"]
 
 [ext_resource type="Script" uid="uid://b6uvtb4id8wnj" path="res://TrainManager.gd" id="1_0xm2m"]
-[ext_resource type="PackedScene" uid="uid://1r4i3q2gkyl5" path="res://character.tscn" id="2_0xm2m"]
+[ext_resource type="Script" uid="uid://csvvaa01ciwy7" path="res://Main.gd" id="1_lquwl"]
+[ext_resource type="PackedScene" uid="uid://cm1b50f6vx3vg" path="res://character.tscn" id="2_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://dh0xxjn6wioax" path="res://train.tscn" id="2_1bvp3"]
 [ext_resource type="PackedScene" uid="uid://bviimvilp1de8" path="res://track.tscn" id="4_lquwl"]
 
@@ -15,20 +16,33 @@ sky_material = SubResource("ProceduralSkyMaterial_0xm2m")
 [sub_resource type="Environment" id="Environment_1bvp3"]
 background_mode = 2
 sky = SubResource("Sky_h2yge")
+ambient_light_color = Color(0.90576947, 0.90576947, 0.90576947, 1)
+ambient_light_energy = 0.4
 tonemap_mode = 2
 
-[node name="Main" type="Node3D" unique_id=1151617610 node_paths=PackedStringArray("player")]
-script = ExtResource("1_0xm2m")
-player = NodePath("CharacterOrigin")
-train_scene = ExtResource("2_1bvp3")
+[node name="Main" type="Node3D" unique_id=1151617610]
+script = ExtResource("1_lquwl")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1158048666]
 environment = SubResource("Environment_1bvp3")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=674234621]
 transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+light_color = Color(0.95468724, 0.95468724, 1, 1)
 shadow_enabled = true
+shadow_bias = 0.05
+shadow_normal_bias = 0.05
+directional_shadow_mode = 1
+directional_shadow_fade_start = 0.01
+directional_shadow_max_distance = 1.0
 
-[node name="CharacterOrigin" parent="." unique_id=1651946498 instance=ExtResource("2_0xm2m")]
+[node name="TrainManager" type="Node3D" parent="." unique_id=1687573989 node_paths=PackedStringArray("player", "track_root")]
+script = ExtResource("1_0xm2m")
+train_scene = ExtResource("2_1bvp3")
+player = NodePath("../Character")
+track_root = NodePath("../Track")
+station_timetable = Array[String](["Station 1"])
 
-[node name="Track" parent="." unique_id=1060532867 instance=ExtResource("4_lquwl")]
+[node name="Track" parent="." unique_id=1060532867 groups=["movable_world"] instance=ExtResource("4_lquwl")]
+
+[node name="Character" parent="." unique_id=1919104733 instance=ExtResource("2_0xm2m")]

@@ -1,0 +1,64 @@
+[gd_scene format=3 uid="uid://clmrg4nj2p7d"]
+
+[ext_resource type="Script" uid="uid://dtxvwc1c5438l" path="res://DebugUI.gd" id="1_egwsh"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_egwsh"]
+bg_color = Color(0, 0, 0, 0.6)
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_egwsh"]
+viewport_path = NodePath("DebugUI_VR/SubViewport")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wm85p"]
+resource_local_to_scene = true
+transparency = 1
+shading_mode = 0
+albedo_texture = SubResource("ViewportTexture_egwsh")
+
+[sub_resource type="QuadMesh" id="QuadMesh_r6kf7"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_wm85p")
+
+[node name="DebugUI" type="Node3D" unique_id=808809629]
+script = ExtResource("1_egwsh")
+
+[node name="DebugUI_Desktop" type="CanvasLayer" parent="." unique_id=963925041]
+
+[node name="MarginContainer" type="MarginContainer" parent="DebugUI_Desktop" unique_id=1012980649]
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="PanelContainer" type="PanelContainer" parent="DebugUI_Desktop/MarginContainer" unique_id=923342600]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_egwsh")
+
+[node name="Label" type="Label" parent="DebugUI_Desktop/MarginContainer/PanelContainer" unique_id=504442142]
+layout_mode = 2
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 32
+
+[node name="DebugUI_VR" type="Node3D" parent="." unique_id=1126421657]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DebugUI_VR" unique_id=882856915]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -1)
+mesh = SubResource("QuadMesh_r6kf7")
+
+[node name="SubViewport" type="SubViewport" parent="DebugUI_VR" unique_id=1053315167]
+transparent_bg = true
+size = Vector2i(1024, 512)
+render_target_update_mode = 4
+
+[node name="Control" type="Control" parent="DebugUI_VR/SubViewport" unique_id=892844130]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="DebugUI_VR/SubViewport/Control" unique_id=1738301217]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Sample Text"
