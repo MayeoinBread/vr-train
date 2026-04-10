@@ -119,7 +119,7 @@ func switch_junction():
 func move_to_next_segment():
 	var old_transform = previous_train_transform
 	
-	var next = choose_segment(true)
+	var next = get_connected_segment(current_segment, travel_direction == TravelDirection.FORWARD)
 	
 	if next:
 		current_segment = next
@@ -135,7 +135,7 @@ func move_to_next_segment():
 func move_to_previous_segment():
 	var old_transform = previous_train_transform
 	
-	var previous = choose_segment(false)
+	var previous = get_connected_segment(current_segment, travel_direction == TravelDirection.FORWARD)
 	
 	if previous:
 		current_segment = previous
@@ -148,20 +148,6 @@ func move_to_previous_segment():
 	else:
 		distance_along = 0.0
 		train.speed = 0.0
-
-#func choose_next_segment():
-	#if current_segment.next_segments.size() == 0:
-		#return null
-	#
-	#var index = current_segment.next_junction_index
-	#return current_segment.get_next_segment(index)
-#
-#func choose_previous_segment():
-	#if current_segment.previous_segments.size() == 0:
-		#return null
-	#
-	#var index = current_segment.previous_junction_index
-	#return current_segment.get_previous_segment(index)
 
 func choose_segment(forward: bool):
 	var index = current_segment.next_junction_index if forward else current_segment.previous_junction_index
@@ -218,18 +204,6 @@ func get_station_from_segment(segment: Node):
 	if segment:
 		return segment.get_station()
 	return null
-
-#func get_next_segment_from(seg: Node) -> Node:
-	#if seg.next_segments.size() == 0:
-		#return null
-	#return seg.next_segments[seg.next_junction_index]
-#
-#func get_previous_segment_from(seg: Node) -> Node:
-	#if seg.previous_segments.size() == 0:
-		#return null
-	#return seg.previous_segments[seg.previous_junction_index]
-
-
 
 func get_next_station_info(lookahead_segments: int = 5) -> Dictionary:
 	var info = {
@@ -338,3 +312,9 @@ func sync_travel_direction():
 		travel_direction = TravelDirection.FORWARD
 	else:
 		travel_direction = TravelDirection.REVERSE
+
+func get_segment_from_current() -> Node:
+	if travel_direction == TravelDirection.FORWARD:
+		return get_connected_segment(current_segment, true)
+	else:
+		return get_connected_segment(current_segment, false)
