@@ -93,11 +93,6 @@ func move_world_relative_to_player(delta_transform: Transform3D) -> void:
 	var player_inv := player.global_transform.affine_inverse()
 	var base := player.global_transform
 	
-	# Move environment or other train children relative to player
-	#for obj in get_tree().get_nodes_in_group("movable_world"):
-		#var local_offset = player.global_transform.affine_inverse() * obj.global_transform
-		#obj.global_transform = player.global_transform * inv_delta * local_offset
-	
 	for obj in get_tree().get_nodes_in_group("movable_world"):
 		var local_offset = player_inv * obj.global_transform
 		obj.global_transform = base * inv_delta * local_offset
@@ -108,13 +103,9 @@ func switch_junction():
 	
 	if not within_toggle_distance():
 		return
-	
-	if travel_direction == TravelDirection.FORWARD:
-		if current_segment.can_switch_junction(1):
-			current_segment.switch_junction(1)
-	elif travel_direction == TravelDirection.REVERSE:
-		if current_segment.can_switch_junction(-1):
-			current_segment.switch_junction(-1)
+		
+	if current_segment.can_switch_junction(travel_sign()):
+		current_segment.switch_junction(travel_sign())
 
 func move_to_next_segment():
 	var old_transform = previous_train_transform
@@ -194,11 +185,10 @@ func switch_train(new_train_scene: PackedScene) -> void:
 
 func within_toggle_distance() -> bool:
 	var length = current_segment.path.curve.get_baked_length()
-	if travel_direction == TravelDirection.FORWARD:
-		return distance_along < (length - current_segment.junction_commit_distance)
-	elif travel_direction == TravelDirection.REVERSE:
-		return distance_along > current_segment.junction_commit_distance
-	return false
+	
+	return (distance_along < (length - current_segment.junction_commit_distance)) \
+			if travel_sign() > 0 \
+			else distance_along > current_segment.junction_commit_distance
 
 func get_station_from_segment(segment: Node):
 	if segment:
@@ -280,7 +270,7 @@ func build_debug_text():
 	# --- Junction ---
 	text += "\n-- Junction --\n"
 	
-	if travel_direction == TravelDirection.FORWARD:
+	if travel_sign() > 0:
 		text += "Next count: %d\n" % current_segment.next_segments.size()
 		text += "Selected: %d\n" % current_segment.next_junction_index
 	else:
@@ -314,7 +304,20 @@ func sync_travel_direction():
 		travel_direction = TravelDirection.REVERSE
 
 func get_segment_from_current() -> Node:
-	if travel_direction == TravelDirection.FORWARD:
-		return get_connected_segment(current_segment, true)
+	return get_connected_segment(current_segment, travel_sign() > 0)
+
+func get_available_exits(segment: Node) -> Array:
+	return segment.next_segments + segment.previous_segments
+
+func get_exit(segment: Node, index: int, forward: bool) -> Node:
+	if forward:
+		if segment.next_segments.size() == 0:
+			return null
+		return segment.next_segments[index % segment.next_segments.size()]
 	else:
-		return get_connected_segment(current_segment, false)
+		if segment.previous_segments.size() == 0:
+			return null
+		return segment.previous_segments[index % segment.previous_segments.size()]
+
+func travel_sign() -> int:
+	return 1 if travel_direction == TravelDirection.FORWARD else -1
