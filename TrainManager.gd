@@ -30,6 +30,8 @@ var previous_train_transform: Transform3D
 var last_target_transform: Transform3D
 var last_exit_basis: Basis
 
+var entered_from_start := true
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	if track_root:
@@ -59,7 +61,9 @@ func _physics_process(delta: float) -> void:
 		switch_junction()
 	
 	# Update train speed
-	distance_along += train.speed * delta
+	# distance_along += train.speed * delta
+	var movement = train.speed * delta
+	distance_along += movement
 	
 	var curve = current_segment.path.curve
 	var length = curve.get_baked_length()
@@ -67,15 +71,10 @@ func _physics_process(delta: float) -> void:
 	# Handle segment transitions
 	if distance_along > length:
 		move_to_next_segment()
-		return
-	
-	if distance_along < 0.0:
+	elif distance_along < 0.0:
 		move_to_previous_segment()
-		return
 	
 	# Sample target transform on current segment
-	# var seg_xform := current_segment.global_transform.orthonormalized()
-	# var target_transform = seg_xform * curve.sample_baked_with_rotation(distance_along)
 	var target_transform = current_segment.get_sample_transform(distance_along)
 	last_target_transform = target_transform
 	last_exit_basis = target_transform.basis
@@ -110,41 +109,45 @@ func switch_junction():
 		current_segment.switch_junction(travel_sign())
 
 func move_to_next_segment():
-	var next = get_connected_segment(current_segment, travel_direction == TravelDirection.FORWARD)
+	var m_len = current_segment.path.curve.get_baked_length()
+	var overflow = distance_along - m_len
+	
+	var next = get_connected_segment(current_segment, entered_from_start)
 	
 	if next:
+		var entering_from_start = next.previous_segments.has(current_segment)
 		current_segment = next
-		distance_along = 0.0
-		var new_local = next.path.curve.sample_baked_with_rotation(0.0)
-		var new_world = next.global_transform * new_local
 
-		var correction = last_exit_basis * new_world.basis.inverse()
-		var corrected = new_world
-		corrected.basis = correction * new_world.basis
-		var delta_transform = previous_train_transform.affine_inverse() * corrected
-		move_world_relative_to_player(delta_transform)
-		previous_train_transform = corrected
+		if entering_from_start:
+			distance_along = overflow
+			entered_from_start = true
+		else:
+			distance_along = overflow
+			entered_from_start = false
+
+		previous_train_transform = current_segment.get_sample_transform(distance_along)
 	else:
 		distance_along = current_segment.path.curve.get_baked_length()
 		train.speed = 0.0
 
 func move_to_previous_segment():
-	var previous = get_connected_segment(current_segment, travel_direction == TravelDirection.FORWARD)
+	var overflow = distance_along
+	var previous = get_connected_segment(current_segment, not entered_from_start)
 	
 	if previous:
+		var entering_from_start =  previous.previous_segments.has(current_segment)
 		current_segment = previous
-		var m_len = previous.path.curve.get_baked_length()
-		distance_along = m_len
-		
-		var new_local = previous.path.curve.sample_baked_with_rotation(m_len)
-		var new_world = previous.global_transform * new_local
 
-		var correction = last_exit_basis * new_world.basis.inverse()
-		var corrected = new_world
-		corrected.basis = correction * new_world.basis
-		var delta_transform = previous_train_transform.affine_inverse() * corrected
-		move_world_relative_to_player(delta_transform)
-		previous_train_transform = corrected
+		if entering_from_start:
+			var new_length = current_segment.path.curve.get_baked_length()
+			distance_along = new_length + overflow
+			entered_from_start = true
+		else:
+			var new_length = current_segment.path.curve.get_baked_length()
+			distance_along = new_length + overflow
+			entered_from_start = false
+
+		previous_train_transform = current_segment.get_sample_transform(distance_along)
 	else:
 		distance_along = 0.0
 		train.speed = 0.0

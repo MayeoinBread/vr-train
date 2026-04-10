@@ -15,6 +15,10 @@ extends Node3D
 @export var station: Node
 
 @export var junction_commit_distance := 5.0
+@export var segment_frame_basis := Basis()
+
+@export var next_entry_offsets: Array[Transform3D]
+@export var previous_entry_offsets: Array[Transform3D]
 
 var markers_forward: Array[MeshInstance3D]
 var markers_backward: Array[MeshInstance3D]
@@ -113,7 +117,7 @@ func is_train_stopped_at_station(train_distance: float) -> bool:
 
 func get_sample_transform(distance: float) -> Transform3D:
 	var local := path.curve.sample_baked_with_rotation(distance)
-	return global_transform * local
+	return global_transform * Transform3D(segment_frame_basis, Vector3.ZERO) * local
 
 func get_sample_transformation_with_direction(distance: float, forward: bool) -> Transform3D:
 	var local := path.curve.sample_baked_with_rotation(distance)
@@ -132,5 +136,16 @@ func get_aligned_transform(distance: float, forward: bool) -> Transform3D:
 	
 	if not forward:
 		local.basis = local.basis.rotated(Vector3.UP, PI)
+	
+	return global_transform * local
+
+func get_entry_transform(from_previous: bool) -> Transform3D:
+	var m_len = path.curve.get_baked_length()
+
+	var local: Transform3D
+	if from_previous:
+		local = path.curve.sample_baked_with_rotation(0.0)
+	else:
+		local = path.curve.sample_baked_with_rotation(m_len)
 	
 	return global_transform * local

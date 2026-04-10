@@ -40,6 +40,9 @@ start_segment = NodePath("Straight")
 next_segments = [NodePath("../LoopEntry1"), NodePath("../LoopExit1")]
 next_directions = Array[String](["straight", "right"])
 feather_signal = NodePath("FeatherSignal")
+segment_frame_basis = null
+next_entry_offsets = null
+previous_entry_offsets = null
 is_switch = true
 
 [node name="Path3D" parent="Straight" index="0" unique_id=1582978415]
@@ -54,6 +57,9 @@ next_segments = [NodePath("../LoopCurve1")]
 next_directions = Array[String]([])
 previous_segments = [NodePath("../Straight")]
 feather_signal = NodePath("")
+segment_frame_basis = null
+next_entry_offsets = null
+previous_entry_offsets = null
 
 [node name="Path3D" parent="LoopEntry1" index="0" unique_id=1582978415]
 curve = SubResource("Curve3D_5tlms")
@@ -64,6 +70,9 @@ next_segments = [NodePath("../LoopExit1")]
 next_directions = Array[String]([])
 previous_segments = [NodePath("../LoopEntry1")]
 feather_signal = NodePath("")
+segment_frame_basis = null
+next_entry_offsets = null
+previous_entry_offsets = null
 
 [node name="Path3D" parent="LoopCurve1" index="0" unique_id=1582978415]
 curve = SubResource("Curve3D_uiq36")
@@ -74,6 +83,9 @@ next_segments = [NodePath("../Straight")]
 next_directions = Array[String]([])
 previous_segments = [NodePath("../LoopCurve1")]
 feather_signal = NodePath("")
+segment_frame_basis = null
+next_entry_offsets = null
+previous_entry_offsets = null
 
 [node name="Path3D" parent="LoopExit1" index="0" unique_id=1582978415]
 curve = SubResource("Curve3D_5i8r5")
