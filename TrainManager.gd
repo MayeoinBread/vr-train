@@ -1,5 +1,12 @@
 extends Node3D
 
+enum TravelDirection {
+	FORWARD,
+	REVERSE
+}
+
+var travel_direction := TravelDirection.FORWARD
+
 @export var train_scene: PackedScene
 @export var player: Node3D
 @export var track_root: Node3D
@@ -43,7 +50,9 @@ func _process(_delta: float) -> void:
 func _physics_process(delta: float) -> void:
 	if not train or not current_segment:
 		return
-		
+	
+	sync_travel_direction()
+	
 	# Desktop input
 	if Input.is_action_just_pressed("switch_junction"):
 		switch_junction()
@@ -100,17 +109,17 @@ func switch_junction():
 	if not within_toggle_distance():
 		return
 	
-	if train.direction == train.Direction.FORWARD:
+	if travel_direction == TravelDirection.FORWARD:
 		if current_segment.can_switch_junction(1):
 			current_segment.switch_junction(1)
-	elif train.direction == train.Direction.REVERSE:
+	elif travel_direction == TravelDirection.REVERSE:
 		if current_segment.can_switch_junction(-1):
 			current_segment.switch_junction(-1)
 
 func move_to_next_segment():
 	var old_transform = previous_train_transform
 	
-	var next = choose_next_segment()
+	var next = choose_segment(true)
 	
 	if next:
 		current_segment = next
@@ -126,7 +135,7 @@ func move_to_next_segment():
 func move_to_previous_segment():
 	var old_transform = previous_train_transform
 	
-	var previous = choose_previous_segment()
+	var previous = choose_segment(false)
 	
 	if previous:
 		current_segment = previous
@@ -140,19 +149,31 @@ func move_to_previous_segment():
 		distance_along = 0.0
 		train.speed = 0.0
 
-func choose_next_segment():
-	if current_segment.next_segments.size() == 0:
-		return null
-	
-	var index = current_segment.next_junction_index
-	return current_segment.get_next_segment(index)
+#func choose_next_segment():
+	#if current_segment.next_segments.size() == 0:
+		#return null
+	#
+	#var index = current_segment.next_junction_index
+	#return current_segment.get_next_segment(index)
+#
+#func choose_previous_segment():
+	#if current_segment.previous_segments.size() == 0:
+		#return null
+	#
+	#var index = current_segment.previous_junction_index
+	#return current_segment.get_previous_segment(index)
 
-func choose_previous_segment():
-	if current_segment.previous_segments.size() == 0:
-		return null
+func choose_segment(forward: bool):
+	var index = current_segment.next_junction_index if forward else current_segment.previous_junction_index
 	
-	var index = current_segment.previous_junction_index
-	return current_segment.get_previous_segment(index)
+	if forward:
+		if current_segment.next_segments.size() == 0:
+			return null
+		return current_segment.next_segments[index]
+	else:
+		if current_segment.previous_segments.size() == 0:
+			return null
+		return current_segment.previous_segments[index]
 
 func _on_throttle_changed(value: float, reset := false) -> void:
 	train.set_throttle(value, reset)
@@ -187,9 +208,9 @@ func switch_train(new_train_scene: PackedScene) -> void:
 
 func within_toggle_distance() -> bool:
 	var length = current_segment.path.curve.get_baked_length()
-	if train.direction == train.Direction.FORWARD:
+	if travel_direction == TravelDirection.FORWARD:
 		return distance_along < (length - current_segment.junction_commit_distance)
-	elif train.direction == train.Direction.REVERSE:
+	elif travel_direction == TravelDirection.REVERSE:
 		return distance_along > current_segment.junction_commit_distance
 	return false
 
@@ -198,15 +219,17 @@ func get_station_from_segment(segment: Node):
 		return segment.get_station()
 	return null
 
-func get_next_segment_from(seg: Node) -> Node:
-	if seg.next_segments.size() == 0:
-		return null
-	return seg.next_segments[seg.next_junction_index]
+#func get_next_segment_from(seg: Node) -> Node:
+	#if seg.next_segments.size() == 0:
+		#return null
+	#return seg.next_segments[seg.next_junction_index]
+#
+#func get_previous_segment_from(seg: Node) -> Node:
+	#if seg.previous_segments.size() == 0:
+		#return null
+	#return seg.previous_segments[seg.previous_junction_index]
 
-func get_previous_segment_from(seg: Node) -> Node:
-	if seg.previous_segments.size() == 0:
-		return null
-	return seg.previous_segments[seg.previous_junction_index]
+
 
 func get_next_station_info(lookahead_segments: int = 5) -> Dictionary:
 	var info = {
@@ -215,7 +238,7 @@ func get_next_station_info(lookahead_segments: int = 5) -> Dictionary:
 	}
 	
 	var current = current_segment
-	var direction = train.direction
+	var direction = travel_direction
 	var distance = 0.0
 	var remaining_in_segment = current.path.curve.get_baked_length() - distance_along
 
@@ -230,7 +253,8 @@ func get_next_station_info(lookahead_segments: int = 5) -> Dictionary:
 			info.distance = distance
 			return info
 		
-		current = get_previous_segment_from(current) if direction == train.Direction.REVERSE else get_next_segment_from(current)
+		current = get_connected_segment(current, direction == TravelDirection.FORWARD)
+		
 		if current:
 			remaining_in_segment = current.path.curve.get_baked_length()
 		else:
@@ -275,14 +299,14 @@ func build_debug_text():
 	# --- Core Info ---
 	text += "Speed: %.2f\n" % train.speed
 	text += "Throttle: %.2f\n" % train.throttle
-	text += "Direction: %s\n" % get_direction_string(train.direction)
+	text += "Direction: %s\n" % get_direction_string(travel_direction)
 	text += "Segment: %s\n" % current_segment.name
 	text += "Distance: %.2f\n" % distance_along
 	
 	# --- Junction ---
 	text += "\n-- Junction --\n"
 	
-	if train.direction == train.Direction.FORWARD:
+	if travel_direction == TravelDirection.FORWARD:
 		text += "Next count: %d\n" % current_segment.next_segments.size()
 		text += "Selected: %d\n" % current_segment.next_junction_index
 	else:
@@ -298,3 +322,19 @@ func build_debug_text():
 		text += "No station ahead"
 	
 	return text
+
+func get_connected_segment(segment: Node, forward: bool) -> Node:
+	if forward:
+		if segment.next_segments.size() == 0:
+			return null
+		return segment.next_segments[segment.next_junction_index]
+	else:
+		if segment.previous_segments.size() == 0:
+			return null
+		return segment.previous_segments[segment.previous_junction_index]
+
+func sync_travel_direction():
+	if train.direction == train.Direction.FORWARD:
+		travel_direction = TravelDirection.FORWARD
+	else:
+		travel_direction = TravelDirection.REVERSE
