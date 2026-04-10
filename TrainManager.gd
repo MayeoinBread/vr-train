@@ -20,6 +20,8 @@ var current_segment: Node3D
 var distance_along := 0.0
 var previous_train_transform: Transform3D
 
+var last_target_transform: Transform3D
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	if track_root:
@@ -62,7 +64,10 @@ func _physics_process(delta: float) -> void:
 		return
 	
 	# Sample target transform on current segment
-	var target_transform = current_segment.global_transform * curve.sample_baked_with_rotation(distance_along)
+	#var target_transform = current_segment.global_transform * curve.sample_baked_with_rotation(distance_along)
+	var seg_xform := current_segment.global_transform.orthonormalized()
+	var target_transform = seg_xform * curve.sample_baked_with_rotation(distance_along)
+	last_target_transform = target_transform
 	
 	# Compute delta motion relative to previous frame
 	var delta_transform = previous_train_transform.affine_inverse() * target_transform
@@ -76,11 +81,17 @@ func _physics_process(delta: float) -> void:
 func move_world_relative_to_player(delta_transform: Transform3D) -> void:
 	# Compute inverse so objects move opposite to train movement
 	var inv_delta = delta_transform.affine_inverse()
+	var player_inv := player.global_transform.affine_inverse()
+	var base := player.global_transform
 	
 	# Move environment or other train children relative to player
+	#for obj in get_tree().get_nodes_in_group("movable_world"):
+		#var local_offset = player.global_transform.affine_inverse() * obj.global_transform
+		#obj.global_transform = player.global_transform * inv_delta * local_offset
+	
 	for obj in get_tree().get_nodes_in_group("movable_world"):
-		var local_offset = player.global_transform.affine_inverse() * obj.global_transform
-		obj.global_transform = player.global_transform * inv_delta * local_offset
+		var local_offset = player_inv * obj.global_transform
+		obj.global_transform = base * inv_delta * local_offset
 
 func switch_junction():
 	if not train or not current_segment:
@@ -107,7 +118,7 @@ func move_to_next_segment():
 		var new_start = current_segment.global_transform * current_segment.path.curve.sample_baked_with_rotation(distance_along)
 		var delta_transform = old_transform.affine_inverse() * new_start
 		move_world_relative_to_player(delta_transform)
-		previous_train_transform = new_start
+		previous_train_transform = last_target_transform
 	else:
 		distance_along = current_segment.path.curve.get_baked_length()
 		train.speed = 0.0
@@ -119,11 +130,12 @@ func move_to_previous_segment():
 	
 	if previous:
 		current_segment = previous
-		distance_along = current_segment.path.curve.get_baked_length()
+		var m_len = current_segment.path.curve.get_baked_length()
+		distance_along = min(m_len, m_len)
 		var new_start = current_segment.global_transform * current_segment.path.curve.sample_baked_with_rotation(distance_along)
 		var delta_transform = old_transform.affine_inverse() * new_start
 		move_world_relative_to_player(delta_transform)
-		previous_train_transform = new_start
+		previous_train_transform = last_target_transform
 	else:
 		distance_along = 0.0
 		train.speed = 0.0
