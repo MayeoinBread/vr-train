@@ -79,10 +79,6 @@ func get_previous_segment(index: int) -> Node3D:
 		return null
 	return previous_segments[index]
 
-func get_point_on_curve(distance: float) -> Transform3D:
-	var local = path.curve.sample_baked_with_rotation(distance)
-	return global_transform * local
-	
 func get_station():
 	return station
 
@@ -114,3 +110,27 @@ func is_train_stopped_at_station(train_distance: float) -> bool:
 		return false
 	
 	return station.is_stopped_at_station(train_distance)
+
+func get_sample_transform(distance: float) -> Transform3D:
+	var local := path.curve.sample_baked_with_rotation(distance)
+	return global_transform * local
+
+func get_sample_transformation_with_direction(distance: float, forward: bool) -> Transform3D:
+	var local := path.curve.sample_baked_with_rotation(distance)
+	
+	if not forward:
+		pass
+	
+	return global_transform * local
+
+func get_forward_basis(distance: float) -> Basis:
+	var local := path.curve.sample_baked_with_rotation(distance)
+	return local.basis
+
+func get_aligned_transform(distance: float, forward: bool) -> Transform3D:
+	var local := path.curve.sample_baked_with_rotation(distance)
+	
+	if not forward:
+		local.basis = local.basis.rotated(Vector3.UP, PI)
+	
+	return global_transform * local
