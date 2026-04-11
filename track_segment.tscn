@@ -13,8 +13,6 @@ point_count = 2
 [node name="TrackSegment" type="Node3D" unique_id=469804477 node_paths=PackedStringArray("path")]
 script = ExtResource("1_2sxnx")
 path = NodePath("Path3D")
-next_directions = null
-feather_signal = null
 
 [node name="Path3D" type="Path3D" parent="." unique_id=1582978415]
 curve = SubResource("Curve3D_pnnvw")

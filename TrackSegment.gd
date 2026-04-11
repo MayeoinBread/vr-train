@@ -119,33 +119,45 @@ func get_sample_transform(distance: float) -> Transform3D:
 	var local := path.curve.sample_baked_with_rotation(distance)
 	return global_transform * Transform3D(segment_frame_basis, Vector3.ZERO) * local
 
-func get_sample_transformation_with_direction(distance: float, forward: bool) -> Transform3D:
-	var local := path.curve.sample_baked_with_rotation(distance)
-	
-	if not forward:
-		pass
-	
-	return global_transform * local
+func map_entry_distance(from_previous: bool, incoming_distance: float) -> float:
+	var length = path.curve.get_baked_length()
 
-func get_forward_basis(distance: float) -> Basis:
-	var local := path.curve.sample_baked_with_rotation(distance)
-	return local.basis
+	if from_previous:
+		return incoming_distance
+	else:
+		return length - incoming_distance
 
 func get_aligned_transform(distance: float, forward: bool) -> Transform3D:
-	var local := path.curve.sample_baked_with_rotation(distance)
-	
+	var length = path.curve.get_baked_length()
+
+	var d = distance
 	if not forward:
-		local.basis = local.basis.rotated(Vector3.UP, PI)
-	
+		d = length - distance
+
+	var local := path.curve.sample_baked_with_rotation(d)
 	return global_transform * local
 
-func get_entry_transform(from_previous: bool) -> Transform3D:
-	var m_len = path.curve.get_baked_length()
+func get_curve_start_point() -> Transform3D:
+	var point0 = path.curve.sample_baked_with_rotation(0)
+	return global_transform * point0
 
-	var local: Transform3D
-	if from_previous:
-		local = path.curve.sample_baked_with_rotation(0.0)
-	else:
-		local = path.curve.sample_baked_with_rotation(m_len)
-	
-	return global_transform * local
+func get_curve_end_point() -> Transform3D:
+	var length = path.curve.get_baked_length()
+	var point1 = path.curve.sample_baked_with_rotation(length)
+	return global_transform * point1
+
+func test_curve_stuff() -> void:
+
+	var point0 = path.curve.sample_baked_with_rotation(0)
+	var point1 = path.curve.sample_baked_with_rotation(path.curve.get_baked_length())
+
+	print("Local:")
+	print("0:", point0, "1:", point1)
+
+	point0 = global_transform * point0
+	point1 = global_transform * point1
+
+	print("Global:")
+	print("0:", point0, "1:", point1)
+
+	point0.origin.distance_to(point1.origin)

@@ -4,30 +4,30 @@
 [ext_resource type="PackedScene" uid="uid://b284fc5gsg17" path="res://track_segment.tscn" id="1_u82g5"]
 [ext_resource type="PackedScene" uid="uid://crggsdic6ny6n" path="res://FeatherSignal.tscn" id="3_uiq36"]
 
-[sub_resource type="Curve3D" id="Curve3D_yny6c"]
+[sub_resource type="Curve3D" id="Curve3D_5tlms"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -60),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
 
-[sub_resource type="Curve3D" id="Curve3D_5tlms"]
+[sub_resource type="Curve3D" id="Curve3D_uiq36"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, -20, 0, 0, 0, -20, 0, 0, 0, 0, 0, 30, 0, -30),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
 
-[sub_resource type="Curve3D" id="Curve3D_uiq36"]
+[sub_resource type="Curve3D" id="Curve3D_5i8r5"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, -15, 0, 0, 0, 0, 0, -15, 0, 0, 0, 15, 0, 0),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
 
-[sub_resource type="Curve3D" id="Curve3D_5i8r5"]
+[sub_resource type="Curve3D" id="Curve3D_5hp82"]
 _data = {
-"points": PackedVector3Array(0, 0, 0, 10, 0, 0, -30.000004, 0, -8, 0, 0, 10, 0, 0, 0, 0, 0, -20),
+"points": PackedVector3Array(0, 0, 0, 10, 0, 0, -30.000004, 0, -8, 0, 0, 10, 0, 0, 0, -2.6226826e-07, 0, -23),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
@@ -40,13 +40,10 @@ start_segment = NodePath("Straight")
 next_segments = [NodePath("../LoopEntry1"), NodePath("../LoopExit1")]
 next_directions = Array[String](["straight", "right"])
 feather_signal = NodePath("FeatherSignal")
-segment_frame_basis = null
-next_entry_offsets = null
-previous_entry_offsets = null
 is_switch = true
 
 [node name="Path3D" parent="Straight" index="0" unique_id=1582978415]
-curve = SubResource("Curve3D_yny6c")
+curve = SubResource("Curve3D_5tlms")
 
 [node name="FeatherSignal" parent="Straight" unique_id=1209385197 instance=ExtResource("3_uiq36")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 0, -59)
@@ -54,41 +51,26 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 0, -59)
 [node name="LoopEntry1" parent="." unique_id=2140504557 node_paths=PackedStringArray("next_segments", "previous_segments") instance=ExtResource("1_u82g5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -60)
 next_segments = [NodePath("../LoopCurve1")]
-next_directions = Array[String]([])
 previous_segments = [NodePath("../Straight")]
-feather_signal = NodePath("")
-segment_frame_basis = null
-next_entry_offsets = null
-previous_entry_offsets = null
 
 [node name="Path3D" parent="LoopEntry1" index="0" unique_id=1582978415]
-curve = SubResource("Curve3D_5tlms")
+curve = SubResource("Curve3D_uiq36")
 
 [node name="LoopCurve1" parent="." unique_id=478787318 node_paths=PackedStringArray("next_segments", "previous_segments") instance=ExtResource("1_u82g5")]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 30, 0, -90)
 next_segments = [NodePath("../LoopExit1")]
-next_directions = Array[String]([])
 previous_segments = [NodePath("../LoopEntry1")]
-feather_signal = NodePath("")
-segment_frame_basis = null
-next_entry_offsets = null
-previous_entry_offsets = null
 
 [node name="Path3D" parent="LoopCurve1" index="0" unique_id=1582978415]
-curve = SubResource("Curve3D_uiq36")
+curve = SubResource("Curve3D_5i8r5")
 
 [node name="LoopExit1" parent="." unique_id=221530588 node_paths=PackedStringArray("next_segments", "previous_segments") instance=ExtResource("1_u82g5")]
 transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 0, 0, -83)
 next_segments = [NodePath("../Straight")]
-next_directions = Array[String]([])
 previous_segments = [NodePath("../LoopCurve1")]
-feather_signal = NodePath("")
-segment_frame_basis = null
-next_entry_offsets = null
-previous_entry_offsets = null
 
 [node name="Path3D" parent="LoopExit1" index="0" unique_id=1582978415]
-curve = SubResource("Curve3D_5i8r5")
+curve = SubResource("Curve3D_5hp82")
 
 [editable path="Straight"]
 [editable path="LoopEntry1"]

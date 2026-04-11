@@ -1,95 +1,131 @@
 extends Node3D
 
-enum TravelDirection {
-	FORWARD,
-	REVERSE
-}
-
-var travel_direction := TravelDirection.FORWARD
-
 @export var train_scene: PackedScene
 @export var player: Node3D
 @export var track_root: Node3D
 
 @export var start_distance := 0.0
 
-@export var marker_distance := 5.0  # meters along branch
-
-@export var station_timetable: Array[String] = []
-var timetable_index := 0
-
-var junction_markers: Array[MeshInstance3D] = []
-
-var was_stopped_at_station := false
+var traversal_sign := 1.0
 
 var train: Node3D
 var current_segment: Node3D
 var distance_along := 0.0
 var previous_train_transform: Transform3D
 
-var last_target_transform: Transform3D
-var last_exit_basis: Basis
+@export var station_timetable: Array[String] = []
+var timetable_index := 0
 
-var entered_from_start := true
-
-# Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	if track_root:
 		current_segment = track_root.get_node(track_root.start_segment)
 	
-	player.train_throttle_changed.connect(Callable(self, "_on_throttle_changed"))
+	player.train_throttle_changed.connect(_on_throttle_changed)
 	
 	spawn_train()
-	previous_train_transform = train.global_transform
+	# previous_train_transform = train.global_transform
+	var t = current_segment.get_sample_transform(distance_along)
 
-func _process(_delta: float) -> void:
-	var now := is_stopped_at_station()
-	
-	if now and not was_stopped_at_station:
-		_on_station_stop(current_segment)
-	
-	was_stopped_at_station = now
-	
+	if traversal_sign < 0:
+		var up = t.basis.y.normalized()
+		t.basis = t.basis.rotated(up, PI)
+
+	previous_train_transform = t
+
 func _physics_process(delta: float) -> void:
 	if not train or not current_segment:
 		return
 	
-	sync_travel_direction()
-	
-	# Desktop input
 	if Input.is_action_just_pressed("switch_junction"):
 		switch_junction()
 	
-	# Update train speed
-	# distance_along += train.speed * delta
-	var movement = train.speed * delta
-	distance_along += movement
+	var delta_move = train.speed * delta * traversal_sign
+	distance_along += delta_move
 	
 	var curve = current_segment.path.curve
 	var length = curve.get_baked_length()
+
+	if distance_along > length or distance_along < 0.0:
+		move_to_adjacent_segment()
+		return
 	
-	# Handle segment transitions
-	if distance_along > length:
-		move_to_next_segment()
-	elif distance_along < 0.0:
-		move_to_previous_segment()
-	
-	# Sample target transform on current segment
+	# var target_transform = current_segment.get_sample_transform(distance_along)
 	var target_transform = current_segment.get_sample_transform(distance_along)
-	last_target_transform = target_transform
-	last_exit_basis = target_transform.basis
+
+	if traversal_sign < 0:
+		var up = target_transform.basis.y.normalized()
+		target_transform.basis = target_transform.basis.rotated(up, PI)
 	
-	# Compute delta motion relative to previous frame
 	var delta_transform = previous_train_transform.affine_inverse() * target_transform
-	
-	# Apply delta to the world (train + environment)
 	move_world_relative_to_player(delta_transform)
 	
-	# Store for next frame
-	previous_train_transform = train.global_transform
+	# previous_train_transform = train.global_transform
+	var t = current_segment.get_sample_transform(distance_along)
+
+	if traversal_sign < 0:
+		var up = t.basis.y.normalized()
+		t.basis = t.basis.rotated(up, PI)
+
+	previous_train_transform = t
+
+# -------------------------
+# CORE FIX (Idea 1)
+# -------------------------
+
+func get_entry_distance(from_pos: Vector3, segment: Node3D) -> float:
+	var start_t = segment.get_curve_start_point()
+	var end_t = segment.get_curve_end_point()
+	
+	var d_start = from_pos.distance_to(start_t.origin)
+	var d_end = from_pos.distance_to(end_t.origin)
+
+	if d_start < d_end:
+		traversal_sign = 1.0
+		return 0.0
+	else:
+		traversal_sign = -1.0
+		return segment.path.curve.get_baked_length()
+
+func move_to_adjacent_segment():
+	var length = current_segment.path.curve.get_baked_length()
+
+	var exiting_from_end = distance_along > length
+	var exiting_from_start = distance_along < 0.0
+
+	var next: Node = null
+
+	if exiting_from_end:
+		next = get_connected_segment(current_segment, true)
+	elif exiting_from_start:
+		next = get_connected_segment(current_segment, false)
+
+	if not next:
+		train.speed = 0.0
+		distance_along = length if exiting_from_end else 0.0
+		return
+	
+	var exit_pos = previous_train_transform.origin
+	current_segment = next
+
+	# Remember, we set traversal_sign within this function. Not like we'll ever forget about that...
+	# TODO pull out traversal_sign setting so we don't forget about it
+	distance_along = get_entry_distance(exit_pos, current_segment)
+	distance_along = clamp(distance_along, 0.01, current_segment.path.curve.get_baked_length() - 0.01)
+	
+	# previous_train_transform = current_segment.get_sample_transform(distance_along)
+	var t = current_segment.get_sample_transform(distance_along)
+
+	if traversal_sign < 0:
+		var up = t.basis.y.normalized()
+		t.basis = t.basis.rotated(up, PI)
+
+	previous_train_transform = t
+
+# -------------------------
+# EXISTING SYSTEMS (unchanged)
+# -------------------------
 
 func move_world_relative_to_player(delta_transform: Transform3D) -> void:
-	# Compute inverse so objects move opposite to train movement
 	var inv_delta = delta_transform.affine_inverse()
 	var player_inv := player.global_transform.affine_inverse()
 	var base := player.global_transform
@@ -108,65 +144,27 @@ func switch_junction():
 	if current_segment.can_switch_junction(travel_sign()):
 		current_segment.switch_junction(travel_sign())
 
-func move_to_next_segment():
-	var m_len = current_segment.path.curve.get_baked_length()
-	var overflow = distance_along - m_len
+# func get_connected_segment(segment: Node, forward: bool) -> Node:
+# 	var list = segment.next_segments
+# 	if list.size() == 0:
+# 		return null
 	
-	var next = get_connected_segment(current_segment, entered_from_start)
+# 	var index = segment.next_junction_index
+# 	return list[index]
+
+func get_connected_segment(segment: Node, forward: bool) -> Node:
+	var list = segment.next_segments if forward else segment.previous_segments
 	
-	if next:
-		var entering_from_start = next.previous_segments.has(current_segment)
-		current_segment = next
-
-		if entering_from_start:
-			distance_along = overflow
-			entered_from_start = true
-		else:
-			distance_along = overflow
-			entered_from_start = false
-
-		previous_train_transform = current_segment.get_sample_transform(distance_along)
-	else:
-		distance_along = current_segment.path.curve.get_baked_length()
-		train.speed = 0.0
-
-func move_to_previous_segment():
-	var overflow = distance_along
-	var previous = get_connected_segment(current_segment, not entered_from_start)
+	if list.size() == 0:
+		return null
 	
-	if previous:
-		var entering_from_start =  previous.previous_segments.has(current_segment)
-		current_segment = previous
-
-		if entering_from_start:
-			var new_length = current_segment.path.curve.get_baked_length()
-			distance_along = new_length + overflow
-			entered_from_start = true
-		else:
-			var new_length = current_segment.path.curve.get_baked_length()
-			distance_along = new_length + overflow
-			entered_from_start = false
-
-		previous_train_transform = current_segment.get_sample_transform(distance_along)
-	else:
-		distance_along = 0.0
-		train.speed = 0.0
-
-func choose_segment(forward: bool):
-	var index = current_segment.next_junction_index if forward else current_segment.previous_junction_index
+	var index = segment.next_junction_index if forward else segment.previous_junction_index
 	
-	if forward:
-		if current_segment.next_segments.size() == 0:
-			return null
-		return current_segment.next_segments[index]
-	else:
-		if current_segment.previous_segments.size() == 0:
-			return null
-		return current_segment.previous_segments[index]
+	return list[index]
 
 func _on_throttle_changed(value: float, reset := false) -> void:
 	train.set_throttle(value, reset)
-	
+
 func spawn_train() -> void:
 	if not train_scene:
 		return
@@ -182,25 +180,14 @@ func spawn_train() -> void:
 func attach_player_to_train() -> void:
 	var seat = train.get_node("SeatAnchor")
 	player.set_seat_anchor(seat)
-	
-	# Update XROrigin3D:
 	player.on_seated()
-
-func switch_train(new_train_scene: PackedScene) -> void:
-	# Remove old
-	if train:
-		train.queue_free()
-	
-	# Spawn new
-	train_scene = new_train_scene
-	spawn_train()
 
 func within_toggle_distance() -> bool:
 	var length = current_segment.path.curve.get_baked_length()
 	
 	return (distance_along < (length - current_segment.junction_commit_distance)) \
-			if travel_sign() > 0 \
-			else distance_along > current_segment.junction_commit_distance
+		if travel_sign() > 0 \
+		else distance_along > current_segment.junction_commit_distance
 
 func get_station_from_segment(segment: Node):
 	if segment:
@@ -214,7 +201,6 @@ func get_next_station_info(lookahead_segments: int = 5) -> Dictionary:
 	}
 	
 	var current = current_segment
-	var direction = travel_direction
 	var distance = 0.0
 	var remaining_in_segment = current.path.curve.get_baked_length() - distance_along
 
@@ -229,7 +215,7 @@ func get_next_station_info(lookahead_segments: int = 5) -> Dictionary:
 			info.distance = distance
 			return info
 		
-		current = get_connected_segment(current, direction == TravelDirection.FORWARD)
+		current = get_connected_segment(current, traversal_sign == 1)
 		
 		if current:
 			remaining_in_segment = current.path.curve.get_baked_length()
@@ -261,8 +247,8 @@ func _on_station_stop(segment):
 
 func get_direction_string(dir):
 	match dir:
-		0: return "Forward"
-		1: return "Reverse"
+		1: return "Forward"
+		-1: return "Reverse"
 		2: return "Stopped"
 	return "Unknown"
 
@@ -275,7 +261,7 @@ func build_debug_text():
 	# --- Core Info ---
 	text += "Speed: %.2f\n" % train.speed
 	text += "Throttle: %.2f\n" % train.throttle
-	text += "Direction: %s\n" % get_direction_string(travel_direction)
+	text += "Direction: %s\n" % get_direction_string(traversal_sign)
 	text += "Segment: %s\n" % current_segment.name
 	text += "Distance: %.2f\n" % distance_along
 	
@@ -299,22 +285,6 @@ func build_debug_text():
 	
 	return text
 
-func get_connected_segment(segment: Node, forward: bool) -> Node:
-	if forward:
-		if segment.next_segments.size() == 0:
-			return null
-		return segment.next_segments[segment.next_junction_index]
-	else:
-		if segment.previous_segments.size() == 0:
-			return null
-		return segment.previous_segments[segment.previous_junction_index]
-
-func sync_travel_direction():
-	if train.direction == train.Direction.FORWARD:
-		travel_direction = TravelDirection.FORWARD
-	else:
-		travel_direction = TravelDirection.REVERSE
-
 func get_segment_from_current() -> Node:
 	return get_connected_segment(current_segment, travel_sign() > 0)
 
@@ -332,4 +302,4 @@ func get_exit(segment: Node, index: int, forward: bool) -> Node:
 		return segment.previous_segments[index % segment.previous_segments.size()]
 
 func travel_sign() -> int:
-	return 1 if travel_direction == TravelDirection.FORWARD else -1
+	return 1 if train.direction == train.Direction.FORWARD else -1
