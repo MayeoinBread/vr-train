@@ -6,12 +6,15 @@ extends Node3D
 
 @export var start_distance := 0.0
 
-var traversal_sign := 1.0
-
 var train: Node3D
 var current_segment: Node3D
 var distance_along := 0.0
 var previous_train_transform: Transform3D
+
+var entering_forward := true
+var segment_forward := true
+var previous_segment: Node = null
+var last_connection: Node = null
 
 @export var station_timetable: Array[String] = []
 var timetable_index := 0
@@ -26,7 +29,7 @@ func _ready() -> void:
 	# previous_train_transform = train.global_transform
 	var t = current_segment.get_sample_transform(distance_along)
 
-	if traversal_sign < 0:
+	if not segment_forward:
 		var up = t.basis.y.normalized()
 		t.basis = t.basis.rotated(up, PI)
 
@@ -39,20 +42,24 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("switch_junction"):
 		switch_junction()
 	
-	var delta_move = train.speed * delta * traversal_sign
-	distance_along += delta_move
+	# var delta_move = train.speed * delta
+	# distance_along += delta_move if segment_forward else -delta_move
+	distance_along += train.speed * delta
 	
 	var curve = current_segment.path.curve
 	var length = curve.get_baked_length()
 
-	if distance_along > length or distance_along < 0.0:
-		move_to_adjacent_segment()
-		return
+	if distance_along > length:
+		distance_along = length - 0.001
+		move_to_adjacent_segment(true)
+	elif distance_along < 0.0:
+		distance_along = 0.001
+		move_to_adjacent_segment(false)
 	
 	# var target_transform = current_segment.get_sample_transform(distance_along)
 	var target_transform = current_segment.get_sample_transform(distance_along)
 
-	if traversal_sign < 0:
+	if not segment_forward:
 		var up = target_transform.basis.y.normalized()
 		target_transform.basis = target_transform.basis.rotated(up, PI)
 	
@@ -62,7 +69,7 @@ func _physics_process(delta: float) -> void:
 	# previous_train_transform = train.global_transform
 	var t = current_segment.get_sample_transform(distance_along)
 
-	if traversal_sign < 0:
+	if not segment_forward:
 		var up = t.basis.y.normalized()
 		t.basis = t.basis.rotated(up, PI)
 
@@ -72,54 +79,72 @@ func _physics_process(delta: float) -> void:
 # CORE FIX (Idea 1)
 # -------------------------
 
-func get_entry_distance(from_pos: Vector3, segment: Node3D) -> float:
-	var start_t = segment.get_curve_start_point()
-	var end_t = segment.get_curve_end_point()
+func move_to_adjacent_segment(exited_at_end: bool):
+	var from_segment = current_segment
+
+	var candidates = current_segment.next_segments if exited_at_end else current_segment.previous_segments
 	
-	var d_start = from_pos.distance_to(start_t.origin)
-	var d_end = from_pos.distance_to(end_t.origin)
-
-	if d_start < d_end:
-		traversal_sign = 1.0
-		return 0.0
-	else:
-		traversal_sign = -1.0
-		return segment.path.curve.get_baked_length()
-
-func move_to_adjacent_segment():
-	var length = current_segment.path.curve.get_baked_length()
-
-	var exiting_from_end = distance_along > length
-	var exiting_from_start = distance_along < 0.0
+	if candidates.size() == 0:
+		train.speed = 0.0
+		return
 
 	var next: Node = null
 
-	if exiting_from_end:
-		next = get_connected_segment(current_segment, true)
-	elif exiting_from_start:
-		next = get_connected_segment(current_segment, false)
+	# FIRST: if we already came from somewhere, try to CONTINUE along same connection
+	if last_connection:
+		for seg in candidates:
+			if seg == last_connection:
+				next = seg
+				break
 
+	# SECOND: fallback to junction selection
 	if not next:
-		train.speed = 0.0
-		distance_along = length if exiting_from_end else 0.0
-		return
-	
-	var exit_pos = previous_train_transform.origin
+		var index = current_segment.next_junction_index if exited_at_end else current_segment.previous_junction_index
+		next = candidates[index]
+
+	# STORE connection for next transition
+	last_connection = from_segment
+
 	current_segment = next
 
-	# Remember, we set traversal_sign within this function. Not like we'll ever forget about that...
-	# TODO pull out traversal_sign setting so we don't forget about it
-	distance_along = get_entry_distance(exit_pos, current_segment)
-	distance_along = clamp(distance_along, 0.01, current_segment.path.curve.get_baked_length() - 0.01)
-	
-	# previous_train_transform = current_segment.get_sample_transform(distance_along)
+	# ENTRY SIDE (GEOMETRY)
+	var start_t = current_segment.get_curve_start_point()
+	var end_t = current_segment.get_curve_end_point()
+
+	var exit_pos = previous_train_transform.origin
+
+	var d_start = exit_pos.distance_to(start_t.origin)
+	var d_end = exit_pos.distance_to(end_t.origin)
+
+	if d_start < d_end:
+		distance_along = 0.0
+		segment_forward = true
+	else:
+		distance_along = current_segment.path.curve.get_baked_length()
+		segment_forward = false
+
+	# SNAP INSIDE SEGMENT
+	if segment_forward:
+		distance_along += 0.05
+	else:
+		distance_along -= 0.05
+
 	var t = current_segment.get_sample_transform(distance_along)
 
-	if traversal_sign < 0:
+	if not segment_forward:
 		var up = t.basis.y.normalized()
 		t.basis = t.basis.rotated(up, PI)
 
 	previous_train_transform = t
+
+func get_entry_distance(from_pos: Vector3, segment: Node3D) -> float:
+	var start_t = segment.get_curve_start_point()
+	var end_t = segment.get_curve_end_point()
+
+	var d_start = from_pos.distance_to(start_t.origin)
+	var d_end = from_pos.distance_to(end_t.origin)
+
+	return 0.0 if d_start < d_end else segment.path.curve.get_baked_length()
 
 # -------------------------
 # EXISTING SYSTEMS (unchanged)
@@ -137,20 +162,14 @@ func move_world_relative_to_player(delta_transform: Transform3D) -> void:
 func switch_junction():
 	if not train or not current_segment:
 		return
-	
+
 	if not within_toggle_distance():
 		return
-		
-	if current_segment.can_switch_junction(travel_sign()):
-		current_segment.switch_junction(travel_sign())
 
-# func get_connected_segment(segment: Node, forward: bool) -> Node:
-# 	var list = segment.next_segments
-# 	if list.size() == 0:
-# 		return null
-	
-# 	var index = segment.next_junction_index
-# 	return list[index]
+	var dir = 1 if segment_forward else -1
+
+	if current_segment.can_switch_junction(dir):
+		current_segment.switch_junction(dir)
 
 func get_connected_segment(segment: Node, forward: bool) -> Node:
 	var list = segment.next_segments if forward else segment.previous_segments
@@ -158,9 +177,13 @@ func get_connected_segment(segment: Node, forward: bool) -> Node:
 	if list.size() == 0:
 		return null
 	
-	var index = segment.next_junction_index if forward else segment.previous_junction_index
+	# CRITICAL: pick the segment that is NOT the one we came from
+	for s in list:
+		if s != segment:
+			return s
 	
-	return list[index]
+	# fallback (dead end or only one connection)
+	return list[0]
 
 func _on_throttle_changed(value: float, reset := false) -> void:
 	train.set_throttle(value, reset)
@@ -186,7 +209,7 @@ func within_toggle_distance() -> bool:
 	var length = current_segment.path.curve.get_baked_length()
 	
 	return (distance_along < (length - current_segment.junction_commit_distance)) \
-		if travel_sign() > 0 \
+		if segment_forward \
 		else distance_along > current_segment.junction_commit_distance
 
 func get_station_from_segment(segment: Node):
@@ -215,7 +238,7 @@ func get_next_station_info(lookahead_segments: int = 5) -> Dictionary:
 			info.distance = distance
 			return info
 		
-		current = get_connected_segment(current, traversal_sign == 1)
+		current = get_connected_segment(current, true)
 		
 		if current:
 			remaining_in_segment = current.path.curve.get_baked_length()
@@ -261,14 +284,15 @@ func build_debug_text():
 	# --- Core Info ---
 	text += "Speed: %.2f\n" % train.speed
 	text += "Throttle: %.2f\n" % train.throttle
-	text += "Direction: %s\n" % get_direction_string(traversal_sign)
+	text += "Direction: %s\n" % ("Forward" if segment_forward else "Reverse")
 	text += "Segment: %s\n" % current_segment.name
 	text += "Distance: %.2f\n" % distance_along
 	
 	# --- Junction ---
 	text += "\n-- Junction --\n"
 	
-	if travel_sign() > 0:
+	# TODO this needs sorting
+	if segment_forward:
 		text += "Next count: %d\n" % current_segment.next_segments.size()
 		text += "Selected: %d\n" % current_segment.next_junction_index
 	else:
@@ -284,22 +308,3 @@ func build_debug_text():
 		text += "No station ahead"
 	
 	return text
-
-func get_segment_from_current() -> Node:
-	return get_connected_segment(current_segment, travel_sign() > 0)
-
-func get_available_exits(segment: Node) -> Array:
-	return segment.next_segments + segment.previous_segments
-
-func get_exit(segment: Node, index: int, forward: bool) -> Node:
-	if forward:
-		if segment.next_segments.size() == 0:
-			return null
-		return segment.next_segments[index % segment.next_segments.size()]
-	else:
-		if segment.previous_segments.size() == 0:
-			return null
-		return segment.previous_segments[index % segment.previous_segments.size()]
-
-func travel_sign() -> int:
-	return 1 if train.direction == train.Direction.FORWARD else -1

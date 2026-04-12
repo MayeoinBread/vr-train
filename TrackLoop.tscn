@@ -27,7 +27,7 @@ point_count = 2
 
 [sub_resource type="Curve3D" id="Curve3D_5hp82"]
 _data = {
-"points": PackedVector3Array(0, 0, 0, 10, 0, 0, -30.000004, 0, -8, 0, 0, 10, 0, 0, 0, -2.6226826e-07, 0, -23),
+"points": PackedVector3Array(0, 0, 0, 15, 0, 0, -30, 0, 0, 0, 0, 15, 0, 0, 0, 0, 0, -15),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
@@ -36,9 +36,10 @@ point_count = 2
 script = ExtResource("1_5tlms")
 start_segment = NodePath("Straight")
 
-[node name="Straight" parent="." unique_id=469804477 node_paths=PackedStringArray("next_segments") instance=ExtResource("1_u82g5")]
+[node name="Straight" parent="." unique_id=469804477 node_paths=PackedStringArray("next_segments", "previous_segments") instance=ExtResource("1_u82g5")]
 next_segments = [NodePath("../LoopEntry1"), NodePath("../LoopExit1")]
 next_directions = Array[String](["straight", "right"])
+previous_segments = [NodePath("../PreStraight")]
 feather_signal = NodePath("FeatherSignal")
 is_switch = true
 
@@ -65,12 +66,16 @@ previous_segments = [NodePath("../LoopEntry1")]
 curve = SubResource("Curve3D_5i8r5")
 
 [node name="LoopExit1" parent="." unique_id=221530588 node_paths=PackedStringArray("next_segments", "previous_segments") instance=ExtResource("1_u82g5")]
-transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 0, 0, -83)
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 0, 0, -75)
 next_segments = [NodePath("../Straight")]
 previous_segments = [NodePath("../LoopCurve1")]
 
 [node name="Path3D" parent="LoopExit1" index="0" unique_id=1582978415]
 curve = SubResource("Curve3D_5hp82")
+
+[node name="PreStraight" parent="." unique_id=1423884564 node_paths=PackedStringArray("next_segments") instance=ExtResource("1_u82g5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 20)
+next_segments = [NodePath("../Straight")]
 
 [editable path="Straight"]
 [editable path="LoopEntry1"]

@@ -159,5 +159,3 @@ func test_curve_stuff() -> void:
 
 	print("Global:")
 	print("0:", point0, "1:", point1)
-
-	point0.origin.distance_to(point1.origin)
