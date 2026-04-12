@@ -7,9 +7,11 @@ extends Node3D
 @export var sleeper_width := 2.6
 @export var sleeper_length := 0.25
 
+@export var port_a : Node3D
+@export var port_b : Node3D
+
 @export var regenerate := false:
 	set(value):
-		print(value)
 		regenerate = false
 		generate_track()
 		
@@ -20,7 +22,7 @@ func _ready() -> void:
 	generate_track()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if is_dirty:
 		generate_track()
 		is_dirty = false
@@ -37,6 +39,14 @@ func generate_track() -> void:
 	
 	var curve = path.curve
 	var length = curve.get_baked_length()
+	
+	# Make sure entry/exit ports are aligned to curve start/end, arrows should point out of curve
+	port_a.transform = curve.sample_baked_with_rotation(0.0)
+	port_b.transform = curve.sample_baked_with_rotation(length)
+	port_b.rotate_y(PI)
+
+	port_a.rebuild()
+	port_b.rebuild()
 	
 	var rail_distance := sleeper_spacing * 0.5
 	while rail_distance < length:

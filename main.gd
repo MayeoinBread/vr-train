@@ -7,7 +7,8 @@ func _ready():
 	await get_tree().process_frame
 	initialise_xr()
 	
-	$XRCharacter.set_ui_source($TrainManager)
+	# TODO needed for debug UI
+	# $XRCharacter.set_ui_source($TrainManager)
 
 func initialise_xr():
 	print("XR interfaces: ", XRServer.get_interfaces())

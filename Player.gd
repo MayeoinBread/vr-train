@@ -14,9 +14,9 @@ func _ready() -> void:
 		xr_interface.connect("pose_recentered", Callable(self, "_on_pose_recentered"))
 	$XROrigin3D/LeftHand.input_vector2_changed.connect(Callable(self, "_on_input_vector2_changed"))
 	
-	print("Character:", transform)
-	print("XROrigin:", $XROrigin3D.transform)
-	print("Camera:", $XROrigin3D/XRCamera3D.transform)
+	# print("Character:", transform)
+	# print("XROrigin:", $XROrigin3D.transform)
+	# print("Camera:", $XROrigin3D/XRCamera3D.transform)
 	
 func _on_input_vector2_changed(action_name: String, value: Vector2) -> void:
 	if action_name == "throttle":

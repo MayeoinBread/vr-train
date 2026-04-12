@@ -2,8 +2,9 @@
 
 [ext_resource type="Script" uid="uid://u13x7n1mmhj4" path="res://TrackSegment.gd" id="1_2sxnx"]
 [ext_resource type="Script" uid="uid://cfqhnvo62sgjf" path="res://TrackBuilder.gd" id="2_pnnvw"]
+[ext_resource type="Script" uid="uid://dxa06yxm4hw8" path="res://PortGizmo.gd" id="3_tea0q"]
 
-[sub_resource type="Curve3D" id="Curve3D_pnnvw"]
+[sub_resource type="Curve3D" id="Curve3D_tea0q"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -20),
 "tilts": PackedFloat32Array(0, 0)
@@ -15,12 +16,21 @@ script = ExtResource("1_2sxnx")
 path = NodePath("Path3D")
 
 [node name="Path3D" type="Path3D" parent="." unique_id=1582978415]
-curve = SubResource("Curve3D_pnnvw")
+curve = SubResource("Curve3D_tea0q")
 
-[node name="TrackBuilder" type="Node3D" parent="." unique_id=1035268372 node_paths=PackedStringArray("path")]
+[node name="TrackBuilder" type="Node3D" parent="." unique_id=1035268372 node_paths=PackedStringArray("path", "port_a", "port_b")]
 script = ExtResource("2_pnnvw")
 path = NodePath("../Path3D")
+port_a = NodePath("../PortA")
+port_b = NodePath("../PortB")
 
-[node name="JunctionMarker" type="Node3D" parent="." unique_id=979068986]
+[node name="PortA" type="Node3D" parent="." unique_id=1739912056]
+script = ExtResource("3_tea0q")
+color = Color(0, 0, 1, 1)
+
+[node name="PortB" type="Node3D" parent="." unique_id=577691231]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, -20)
+script = ExtResource("3_tea0q")
+color = Color(1, 0.64705884, 0, 1)
 
 [connection signal="curve_changed" from="Path3D" to="TrackBuilder" method="_on_path_3d_curve_changed"]
