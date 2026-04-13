@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://cson8qgnaqv2a"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l5ujs"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0, 0, 1, 0.5)
+disable_receive_shadows = true
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_m3bkh"]
+material = SubResource("StandardMaterial3D_l5ujs")
+top_radius = 0.0
+height = 1.0
+
+[node name="JunctionIndicator" type="Node3D" unique_id=1654905460]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=191642888]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.5, 0)
+mesh = SubResource("CylinderMesh_m3bkh")

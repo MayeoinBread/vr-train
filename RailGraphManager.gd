@@ -1,6 +1,8 @@
 @tool
 extends Node
 
+signal junction_changed(exit_port: Node3D)
+
 var ports = {}  # key: "segmentA:portA"
 var connections := {}  # adjacency list
 
@@ -103,8 +105,19 @@ func is_valid_connection(from_port, to_port) -> bool:
 
 	return ok
 
-func set_switch(port: Node3D, selected_next: Node3D) -> void:
-	active_switches[port] = selected_next
+func set_switch(exit_port: Node3D, target_port: Node3D) -> void:
+	active_switches[exit_port] = target_port
+	junction_changed.emit(exit_port)
+
+func get_active_connection(exit_port: Node3D) -> Node3D:
+	if exit_port in active_switches:
+		return active_switches[exit_port]
+	
+	var options = get_connections(exit_port)
+	if options.is_empty():
+		return null
+	
+	return options[0]  # default fallback
 
 func resolve_next_port(port) -> Node3D:
 	var options = connections.get(port, [])
@@ -118,3 +131,13 @@ func resolve_next_port(port) -> Node3D:
 
 func get_connections(port: Node3D) -> Array:
 	return connections.get(port, [])
+
+func get_junction_state(exit_port: Node3D) -> Dictionary:
+	var options = get_connections(exit_port)
+	var active = get_active_connection(exit_port)
+
+	return {
+		"exit_port": exit_port,
+		"options": options,
+		"active_port": active
+	}
