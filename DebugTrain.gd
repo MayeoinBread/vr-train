@@ -61,12 +61,17 @@ func _attach_to_port(port: Node3D):
 	previous_train_transform = current_segment.get_sample_transform(distance_along)
 	active = true
 	
-	update_track_visuals(_get_exit_port())
+	update_indicators(_get_exit_port())
+	# _reset_indicator_materials()
+
+func _reset_indicator_materials() -> void:
+	for mat in indicator_materials:
+		mat.albedo_color = Color(1, 1, 1, 1)
 
 func _physics_process(delta: float) -> void:
 	if not active:
 		return
-	
+
 	var delta_move = speed * delta * direction
 	distance_along += delta_move
 
@@ -141,109 +146,57 @@ func can_switch() -> bool:
 		return distance_along < (length - switch_cutoff_distance)
 	else:
 		return distance_along > switch_cutoff_distance
-	
-func update_track_visuals(exit_port: Node3D) -> void:
+
+func update_indicators(exit_port: Node3D) -> void:
 	var options = RailGraphManager.get_connections(exit_port)
-
-	if options.size() > 1:
-		_set_state_junction(exit_port, options)
-	else:
-		_set_state_cruise(exit_port, options)
-
-func _set_state_junction(exit_port: Node3D, options: Array) -> void:
-	visual_state = TrackVisualState.JUNCTION_PREVIEW
-
-	var index = 0
+	if options.is_empty():
+		for ind in junction_indicators:
+			ind.visible = false
+		return
+	
 	var active_port = RailGraphManager.get_active_connection(exit_port)
+	var index := 0
 
-	for i in range(options.size()):
+	for i in options.size():
 		var start_port = options[i]
 		var port_chain = _get_lookahead_path(start_port, lookahead_steps)
-		port_chain.remove_at(0)
 
-		for j in range(port_chain.size()):
+		for j in port_chain.size():
 			var p = port_chain[j]
 			var seg = p.get_parent()
 			if seg == null:
 				continue
-
+			
 			_ensure_indicator(index)
 
 			var ind = junction_indicators[index]
 			var mat = indicator_materials[index]
-			
-			mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+
 			mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+
+			var t := float(j) / float(max(port_chain.size() - 1, 1))
 
 			var d = seg.path.curve.get_baked_length() / 2
 			var xform = seg.get_sample_transform(d)
-
 			ind.global_transform = xform.orthonormalized()
+
 			ind.visible = true
 
-			var t = float(j) / float(lookahead_steps - 1)
+			var is_active_branch = start_port == active_port
+
+			var base_color = Color(1, 0.2, 0.2) if is_active_branch else Color(0.6, 0.6, 0.6)
 			var alpha = lerp(0.9, 0.1, t)
 
-			var active_color = Color(1, 0.2, 0.2)
-			var inactive_color = Color(0.6, 0.6, 0.6)
-			var base_color = active_color if start_port == active_port else inactive_color
+			var target_color = Color(base_color.r, base_color.g, base_color.b, alpha)
 
-			var final_color = base_color.lerp(Color(1, 1, 1), t * 0.5)
-
-			mat.albedo_color = Color(final_color.r, final_color.g, final_color.b, alpha)
-
-			# if start_port == active_port:
-			# 	# mat.albedo_color = Color(1, 0.2, 0.2, 0.9 - j * 0.2)
-			# 	mat.albedo_color = Color(1, 0.2, 0.2, alpha)
-			# else:
-			# 	mat.albedo_color = Color(0.6, 0.6, 0.6, 0.3)
-			
-			var m_scale = lerp(1.0, 0.4, t)
-			ind.scale = Vector3.ONE * m_scale
+			# var current = mat.albedo_color
+			# mat.albedo_color = current.lerp(target_color, get_process_delta_time() * 8.0)
+			mat.albedo_color = target_color
 
 			index += 1
-
 	_hide_excess(index)
-
-func _set_state_cruise(exit_port: Node3D, options: Array) -> void:
-	visual_state = TrackVisualState.CRUISE_PREVIEW
-
-	if options.is_empty():
-		_hide_all()
-		return
 	
-	var port = RailGraphManager.get_active_connection(exit_port)
-	if port == null:
-		port = options[0]
-	
-	for i in range(lookahead_steps):
-		if port == null:
-			break
-		
-		var seg = port.get_parent()
-		if seg == null:
-			break
-		
-		_ensure_indicator(i)
-
-		var ind = junction_indicators[i]
-		var mat = indicator_materials[i]
-
-		var d = seg.path.curve.get_baked_length() / 2
-		var xform = seg.get_sample_transform(d)
-
-		ind.global_transform = xform.orthonormalized()
-		ind.visible = true
-
-		mat.albedo_color = Color(0.6, 0.6, 1.0, 0.25)
-		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-
-		# advance forward
-		port = RailGraphManager.get_active_connection(_get_exit_from_segment(port))
-	
-	_hide_excess(lookahead_steps)
-
 func _ensure_indicator(i: int) -> void:
 	while junction_indicators.size() <= i:
 		var ind = indicator_scene.instantiate()
@@ -275,7 +228,7 @@ func _set_indicator_inactive(index: int) -> void:
 	mat.albedo_color = Color(0.6, 0.6, 0.6, 0.3)
 
 func _on_junction_changed(exit_port: Node3D) -> void:
-	update_track_visuals(exit_port)
+	update_indicators(exit_port)
 
 func _get_lookahead_path(start_port: Node3D, depth: int) -> Array[Node3D]:
 	var result: Array[Node3D] = []
