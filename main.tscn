@@ -51,5 +51,5 @@ script = ExtResource("5_lquwl")
 [node name="Track" parent="." unique_id=1517222345 groups=["movable_world"] instance=ExtResource("5_272bh")]
 
 [node name="DebugTrain" parent="." unique_id=1368829044 instance=ExtResource("6_272bh")]
-speed = 4.0
+speed = 6.0
 indicator_scene = ExtResource("7_272bh")

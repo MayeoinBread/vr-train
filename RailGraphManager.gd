@@ -6,6 +6,8 @@ signal junction_changed(exit_port: Node3D)
 var signal_scene: PackedScene = preload("res://FeatherSignal.tscn")
 var junction_signals := {}  # exit_port -> signal instance
 
+var junction_ordering := {}
+
 var ports = {}  # key: "segmentA:portA"
 var connections := {}  # adjacency list
 
@@ -34,6 +36,8 @@ func initialise(track: Node, track_connections: Node, start_node: Node3D):
 	build_graph(track_root)
 	apply_connections(connections_source)
 	start_port = start_node
+
+	_build_junction_ordering()
 
 	_build_signals()
 
@@ -76,9 +80,13 @@ func _update_signal(exit_port: Node3D) -> void:
 	var target_port = get_active_connection(exit_port)
 	if target_port == null:
 		return
-	
-	var dir_label = _get_direction_label(exit_port, target_port)
-	m_sig.set_direction_by_string(dir_label)
+
+	var branches = junction_ordering.get(exit_port, [])
+
+	for b in branches:
+		if b.port == target_port:
+			m_sig.set_direction_by_string(b.label)
+			return
 
 func build_graph(track: Node):
 	ports.clear()
@@ -114,6 +122,80 @@ func apply_connections(track_connections):
 			var from_key = from_segment.name + ":Port" + c["from_port"]
 			var to_key = to_segment.name + ":Port" + c["to_port"]
 			push_warning("Invalid track connection ignored", from_key, ":", to_key)
+
+func _build_junction_ordering():
+	junction_ordering.clear()
+
+	for exit_port in connections.keys():
+		var options = connections[exit_port]
+		if options.size() <= 1:
+			continue
+
+		var forward = -exit_port.global_transform.basis.z.normalized()
+		forward.y = 0
+		forward = forward.normalized()
+
+		var right = forward.cross(Vector3.UP).normalized()
+
+		var scored = []
+
+		for target in options:
+			var dir_world = _get_branch_direction(target)
+			if dir_world == Vector3.ZERO:
+				continue
+
+			dir_world.y = 0
+			dir_world = dir_world.normalized()
+
+			var x = right.dot(dir_world)
+			var z = forward.dot(dir_world)
+
+			scored.append({
+				"port": target,
+				"x": x,
+				"z": z
+			})
+
+		if scored.is_empty():
+			continue
+
+		# sort by forward alignment (MOST IMPORTANT STEP)
+		scored.sort_custom(func(a, b):
+			return a.z > b.z
+		)
+
+		var result = []
+
+		# 1. best forward = straight (always)
+
+		for score in scored:
+			if score.z <= -0.8:
+				result.append({
+					"port": score.port,
+					"label": "straight"
+				})
+			elif score.x <= -0.5:
+				result.append({
+					"port": score.port,
+					"label": "right"
+				})
+			else:
+				result.append({
+					"port": score.port,
+					"label": "left"
+				})
+
+		junction_ordering[exit_port] = result
+
+func _get_junction_frame(exit_port: Node3D) -> Basis:
+	var forward = -exit_port.global_transform.basis.z.normalized()
+	forward.y = 0
+	forward = forward.normalized()
+
+	var right = forward.cross(Vector3.UP).normalized()
+	var up = right.cross(forward).normalized()
+
+	return Basis(right, up, forward)
 
 func add_connection(from_port: Node3D, to_port: Node3D) -> void:
 	if not connections.has(from_port):
@@ -193,6 +275,19 @@ func get_junction_state(exit_port: Node3D) -> Dictionary:
 		"options": options,
 		"active_port": active
 	}
+
+func _get_branch_direction(target_port: Node3D) -> Vector3:
+	var segment = target_port.get_parent()
+	if segment == null or segment.path == null:
+		return Vector3.ZERO
+	
+	var curve = segment.path.curve
+	if curve == null:
+		return Vector3.ZERO
+	
+	# NOTE IF junctions get messed up in future, could be here if the curves are not too obvious
+	var xform = segment.get_sample_transform(curve.get_baked_length())
+	return -xform.basis.z.normalized()
 
 func _get_direction_label(exit_port: Node3D, target_port: Node3D) -> String:
 	var forward = -exit_port.global_transform.basis.z.normalized()

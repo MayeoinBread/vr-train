@@ -67,6 +67,20 @@ _data = {
 }
 point_count = 2
 
+[sub_resource type="Curve3D" id="Curve3D_u570j"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, -10, 0, 0, 0, 10, 0, 0, 0, 0, 0, -20, 0, -20),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_ceo63"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, -10, 0, 0, 0, -10, 0, 0, 0, 0, 0, 20, 0, -20),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
 [node name="Track" type="Node3D" unique_id=1517222345 node_paths=PackedStringArray("start_port")]
 script = ExtResource("1_4imsm")
 start_port = NodePath("Segments/TrackSegment/PortA")
@@ -159,6 +173,24 @@ curve = SubResource("Curve3D_ffny3")
 [node name="PortB" parent="Segments/TrackSegment11" index="3" unique_id=577691231]
 transform = Transform3D(-0.8656199, 0, 0.5007017, 0, 1, 0, -0.5007017, 0, -0.8656199, 7.3038483, 0, -24.650635)
 
+[node name="TrackSegment12" parent="Segments" unique_id=341603078 instance=ExtResource("2_a81rc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -170)
+
+[node name="Path3D" parent="Segments/TrackSegment12" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_u570j")
+
+[node name="PortB" parent="Segments/TrackSegment12" index="3" unique_id=577691231]
+transform = Transform3D(8.742278e-08, 0, -1, 0, 1, 0, 1, 0, 8.742278e-08, -20, 0, -20)
+
+[node name="TrackSegment13" parent="Segments" unique_id=1304327719 instance=ExtResource("2_a81rc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -170)
+
+[node name="Path3D" parent="Segments/TrackSegment13" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_ceo63")
+
+[node name="PortB" parent="Segments/TrackSegment13" index="3" unique_id=577691231]
+transform = Transform3D(-8.742278e-08, 0, 1, 0, 1, 0, -1, 0, -8.742278e-08, 20, 0, -20)
+
 [node name="TrackConnections" type="Node3D" parent="." unique_id=278504322]
 script = ExtResource("3_ybje0")
 connections = Array[Dictionary]([{
@@ -211,6 +243,16 @@ connections = Array[Dictionary]([{
 "from_segment": NodePath("../Segments/TrackSegment10"),
 "to_port": "A",
 "to_segment": NodePath("../Segments/TrackSegment11")
+}, {
+"from_port": "B",
+"from_segment": NodePath("../Segments/TrackSegment5"),
+"to_port": "A",
+"to_segment": NodePath("../Segments/TrackSegment12")
+}, {
+"from_port": "B",
+"from_segment": NodePath("../Segments/TrackSegment5"),
+"to_port": "A",
+"to_segment": NodePath("../Segments/TrackSegment13")
 }])
 
 [editable path="Segments/TrackSegment"]
@@ -222,3 +264,5 @@ connections = Array[Dictionary]([{
 [editable path="Segments/TrackSegment9"]
 [editable path="Segments/TrackSegment10"]
 [editable path="Segments/TrackSegment11"]
+[editable path="Segments/TrackSegment12"]
+[editable path="Segments/TrackSegment13"]
