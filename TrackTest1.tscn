@@ -1,0 +1,224 @@
+[gd_scene format=3 uid="uid://bmi8hnmog48dn"]
+
+[ext_resource type="Script" uid="uid://2ly44wjqdec3" path="res://track.gd" id="1_4imsm"]
+[ext_resource type="PackedScene" uid="uid://b284fc5gsg17" path="res://track_segment.tscn" id="2_a81rc"]
+[ext_resource type="Script" uid="uid://cxjcpp3banukr" path="res://TrackConnections.gd" id="3_ybje0"]
+
+[sub_resource type="Curve3D" id="Curve3D_4imsm"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -50),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_a81rc"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -40),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_ybje0"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -40),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_k002u"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, -15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 0, -22),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_1re55"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -30),
+"tilts": PackedFloat32Array(0.017453292, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_216pj"]
+_data = {
+"points": PackedVector3Array(-0.2, 0, 11.400001, 0, 0, -10, 0, 0, 0, -5.9, 0, 10.2, 5.9, 0, -10.2, 7.3038483, 0, -24.650635),
+"tilts": PackedFloat32Array(0.017453292, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_tn1gl"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, -15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 0, -22),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_j1pbi"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -30),
+"tilts": PackedFloat32Array(0.017453292, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_ffny3"]
+_data = {
+"points": PackedVector3Array(-0.2, 0, 11.400001, 0, 0, -10, 0, 0, 0, -5.9, 0, 10.2, 5.9, 0, -10.2, 7.3038483, 0, -24.650635),
+"tilts": PackedFloat32Array(0.017453292, 0)
+}
+point_count = 2
+
+[node name="Track" type="Node3D" unique_id=1517222345 node_paths=PackedStringArray("start_port")]
+script = ExtResource("1_4imsm")
+start_port = NodePath("Segments/TrackSegment/PortA")
+
+[node name="Segments" type="Node3D" parent="." unique_id=1329171972]
+
+[node name="TrackSegment" parent="Segments" unique_id=469804477 instance=ExtResource("2_a81rc")]
+
+[node name="Path3D" parent="Segments/TrackSegment" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_4imsm")
+
+[node name="PortB" parent="Segments/TrackSegment" index="3" unique_id=577691231]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, -50)
+
+[node name="TrackSegment2" parent="Segments" unique_id=279981764 instance=ExtResource("2_a81rc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
+
+[node name="TrackSegment3" parent="Segments" unique_id=1224306542 instance=ExtResource("2_a81rc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -70)
+
+[node name="Path3D" parent="Segments/TrackSegment3" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_a81rc")
+
+[node name="PortB" parent="Segments/TrackSegment3" index="3" unique_id=577691231]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, -40)
+
+[node name="TrackSegment4" parent="Segments" unique_id=9997533 instance=ExtResource("2_a81rc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -110)
+
+[node name="TrackSegment5" parent="Segments" unique_id=1396624539 instance=ExtResource("2_a81rc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -130)
+
+[node name="Path3D" parent="Segments/TrackSegment5" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_ybje0")
+
+[node name="PortB" parent="Segments/TrackSegment5" index="3" unique_id=577691231]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, -40)
+
+[node name="TrackSegment6" parent="Segments" unique_id=1947924511 instance=ExtResource("2_a81rc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
+
+[node name="Path3D" parent="Segments/TrackSegment6" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_k002u")
+
+[node name="PortB" parent="Segments/TrackSegment6" index="3" unique_id=577691231]
+transform = Transform3D(-0.47409984, 0, 0.8804711, 0, 1, 0, -0.8804711, 0, -0.47409984, 13, 0, -22)
+
+[node name="TrackSegment7" parent="Segments" unique_id=338051985 instance=ExtResource("2_a81rc")]
+transform = Transform3D(0.49999997, 0, -0.86602545, 0, 1, 0, 0.86602545, 0, 0.49999997, 13, 0, -72)
+
+[node name="Path3D" parent="Segments/TrackSegment7" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_1re55")
+
+[node name="PortB" parent="Segments/TrackSegment7" index="3" unique_id=577691231]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, -30)
+
+[node name="TrackSegment8" parent="Segments" unique_id=294623167 instance=ExtResource("2_a81rc")]
+transform = Transform3D(0.49999997, 0, -0.86602545, 0, 1, 0, 0.86602545, 0, 0.49999997, 39, 0, -87)
+
+[node name="Path3D" parent="Segments/TrackSegment8" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_216pj")
+
+[node name="PortB" parent="Segments/TrackSegment8" index="3" unique_id=577691231]
+transform = Transform3D(-0.8656199, 0, 0.5007017, 0, 1, 0, -0.5007017, 0, -0.8656199, 7.3038483, 0, -24.650635)
+
+[node name="TrackSegment9" parent="Segments" unique_id=322677057 instance=ExtResource("2_a81rc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -110)
+
+[node name="Path3D" parent="Segments/TrackSegment9" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_tn1gl")
+
+[node name="PortB" parent="Segments/TrackSegment9" index="3" unique_id=577691231]
+transform = Transform3D(-0.47409984, 0, 0.8804711, 0, 1, 0, -0.8804711, 0, -0.47409984, 13, 0, -22)
+
+[node name="TrackSegment10" parent="Segments" unique_id=1584352788 instance=ExtResource("2_a81rc")]
+transform = Transform3D(0.49999997, 0, -0.86602545, 0, 1, 0, 0.86602545, 0, 0.49999997, 13, 0, -132)
+
+[node name="Path3D" parent="Segments/TrackSegment10" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_j1pbi")
+
+[node name="PortB" parent="Segments/TrackSegment10" index="3" unique_id=577691231]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, -30)
+
+[node name="TrackSegment11" parent="Segments" unique_id=2048095829 instance=ExtResource("2_a81rc")]
+transform = Transform3D(0.49999997, 0, -0.86602545, 0, 1, 0, 0.86602545, 0, 0.49999997, 39, 0, -147)
+
+[node name="Path3D" parent="Segments/TrackSegment11" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_ffny3")
+
+[node name="PortB" parent="Segments/TrackSegment11" index="3" unique_id=577691231]
+transform = Transform3D(-0.8656199, 0, 0.5007017, 0, 1, 0, -0.5007017, 0, -0.8656199, 7.3038483, 0, -24.650635)
+
+[node name="TrackConnections" type="Node3D" parent="." unique_id=278504322]
+script = ExtResource("3_ybje0")
+connections = Array[Dictionary]([{
+"from_port": "B",
+"from_segment": NodePath("../Segments/TrackSegment"),
+"to_port": "A",
+"to_segment": NodePath("../Segments/TrackSegment2")
+}, {
+"from_port": "B",
+"from_segment": NodePath("../Segments/TrackSegment2"),
+"to_port": "A",
+"to_segment": NodePath("../Segments/TrackSegment3")
+}, {
+"from_port": "B",
+"from_segment": NodePath("../Segments/TrackSegment3"),
+"to_port": "A",
+"to_segment": NodePath("../Segments/TrackSegment4")
+}, {
+"from_port": "B",
+"from_segment": NodePath("../Segments/TrackSegment4"),
+"to_port": "A",
+"to_segment": NodePath("../Segments/TrackSegment5")
+}, {
+"from_port": "B",
+"from_segment": NodePath("../Segments/TrackSegment"),
+"to_port": "A",
+"to_segment": NodePath("../Segments/TrackSegment6")
+}, {
+"from_port": "B",
+"from_segment": NodePath("../Segments/TrackSegment6"),
+"to_port": "A",
+"to_segment": NodePath("../Segments/TrackSegment7")
+}, {
+"from_port": "B",
+"from_segment": NodePath("../Segments/TrackSegment7"),
+"to_port": "A",
+"to_segment": NodePath("../Segments/TrackSegment8")
+}, {
+"from_port": "B",
+"from_segment": NodePath("../Segments/TrackSegment3"),
+"to_port": "A",
+"to_segment": NodePath("../Segments/TrackSegment9")
+}, {
+"from_port": "B",
+"from_segment": NodePath("../Segments/TrackSegment9"),
+"to_port": "A",
+"to_segment": NodePath("../Segments/TrackSegment10")
+}, {
+"from_port": "B",
+"from_segment": NodePath("../Segments/TrackSegment10"),
+"to_port": "A",
+"to_segment": NodePath("../Segments/TrackSegment11")
+}])
+
+[editable path="Segments/TrackSegment"]
+[editable path="Segments/TrackSegment3"]
+[editable path="Segments/TrackSegment5"]
+[editable path="Segments/TrackSegment6"]
+[editable path="Segments/TrackSegment7"]
+[editable path="Segments/TrackSegment8"]
+[editable path="Segments/TrackSegment9"]
+[editable path="Segments/TrackSegment10"]
+[editable path="Segments/TrackSegment11"]

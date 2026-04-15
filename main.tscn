@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://csvvaa01ciwy7" path="res://main.gd" id="1_lquwl"]
 [ext_resource type="PackedScene" uid="uid://cm1b50f6vx3vg" path="res://character.tscn" id="2_0xm2m"]
-[ext_resource type="PackedScene" uid="uid://bviimvilp1de8" path="res://track.tscn" id="4_1bvp3"]
+[ext_resource type="PackedScene" uid="uid://bmi8hnmog48dn" path="res://TrackTest1.tscn" id="5_272bh"]
 [ext_resource type="Script" uid="uid://doowrdw818f2m" path="res://RailGraphManager.gd" id="5_lquwl"]
 [ext_resource type="Script" uid="uid://cjs8k0bi2vchv" path="res://DesktopChar.gd" id="6_7mycd"]
 [ext_resource type="PackedScene" uid="uid://boxwcudkrvasr" path="res://DebugTrain.tscn" id="6_272bh"]
@@ -48,7 +48,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.8, 0)
 [node name="RailGraphManager" type="Node" parent="." unique_id=2020855854]
 script = ExtResource("5_lquwl")
 
-[node name="Track" parent="." unique_id=1060532867 groups=["movable_world"] instance=ExtResource("4_1bvp3")]
+[node name="Track" parent="." unique_id=1517222345 groups=["movable_world"] instance=ExtResource("5_272bh")]
 
 [node name="DebugTrain" parent="." unique_id=1368829044 instance=ExtResource("6_272bh")]
 speed = 4.0
