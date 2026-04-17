@@ -7,6 +7,11 @@ enum TrackVisualState {
 
 var visual_state: TrackVisualState = TrackVisualState.CRUISE_PREVIEW
 
+@export var world_anchor: Node3D
+@export var spawn_point_index: int = 0
+
+@export var is_player_controlled: bool = false
+
 @export var speed: float = 2.0
 @export var auto_start: bool = true
 
@@ -29,18 +34,25 @@ var direction: int = 1
 
 # var last_pos: Vector3
 var previous_train_transform: Transform3D
-var active: bool = false
 
 var pending_switch_index: int = 0
 
 func _ready() -> void:
+	TrainManager.register_train(self)
+	
+	if is_player_controlled:
+		TrainManager.set_active_train(self)
+	
 	if auto_start:
 		reset()
 	
 	RailGraphManager.junction_changed.connect(_on_junction_changed)
 
+func _exit_tree() -> void:
+	TrainManager.unregister_train(self)
+
 func reset() -> void:
-	var port = RailGraphManager.start_port
+	var port = RailGraphManager.get_spawn_port(spawn_point_index)
 	if port:
 		_attach_to_port(port)
 
@@ -58,19 +70,45 @@ func _attach_to_port(port: Node3D):
 		distance_along = length
 		direction = -1
 
-	previous_train_transform = current_segment.get_sample_transform(distance_along)
-	active = true
+	# previous_train_transform = current_segment.get_sample_transform(distance_along)
+	# if TrainManager.active_train == self:
+	# 	world_anchor.global_transform = current_segment.get_sample_transform(distance_along)
+
+	var start_transform = current_segment.get_sample_transform(distance_along)
+	print("Origin for train:")
+	print(start_transform)
+
+	if TrainManager.active_train == self:
+		print("ACTIVE TRAIN")
+		_align_world_to_spawn(start_transform)
 	
+	previous_train_transform = current_segment.get_sample_transform(distance_along)
+
 	update_indicators(_get_exit_port())
 	# _reset_indicator_materials()
+
+func _align_world_to_spawn(target: Transform3D) -> void:
+	var world_root = get_tree().get_first_node_in_group("movable_world")
+	if world_root == null:
+		return
+
+	var anchor:= world_anchor.global_transform
+	var offset:= anchor.affine_inverse() * target
+	var inv_offset:= offset.affine_inverse()
+
+	for obj in get_tree().get_nodes_in_group("movable_world"):
+		var local = anchor.affine_inverse() * obj.global_transform
+		obj.global_transform = anchor * inv_offset * local
 
 func _reset_indicator_materials() -> void:
 	for mat in indicator_materials:
 		mat.albedo_color = Color(1, 1, 1, 1)
 
 func _physics_process(delta: float) -> void:
-	if not active:
+	if current_segment == null:
 		return
+
+	var is_player = TrainManager.active_train == self
 
 	var delta_move = speed * delta * direction
 	distance_along += delta_move
@@ -83,25 +121,43 @@ func _physics_process(delta: float) -> void:
 		return
 	
 	var target_transform = current_segment.get_sample_transform(distance_along)
-	var delta_transform = previous_train_transform.affine_inverse() * target_transform
-	move_world_relative_to_player(delta_transform)
-
-	previous_train_transform = current_segment.get_sample_transform(distance_along)
-
-func move_world_relative_to_player(delta_transform: Transform3D) -> void:
-	var inv_delta = delta_transform.affine_inverse()
-	var player_inv := global_transform.affine_inverse()
-	var base := global_transform
 	
+	if is_player:
+		var delta_transform = previous_train_transform.affine_inverse() * target_transform
+		# move_world_relative_to_player(delta_transform)
+		apply_world_shift(delta_transform)
+		
+		world_anchor.global_transform = current_segment.get_sample_transform(distance_along)
+		previous_train_transform = current_segment.get_sample_transform(distance_along)
+	else:
+		global_transform = target_transform
+		previous_train_transform = target_transform
+
+
+func apply_world_shift(delta_transform: Transform3D) -> void:
+	var anchor = world_anchor.global_transform
+	var inv_delta = delta_transform.affine_inverse()
+
 	for obj in get_tree().get_nodes_in_group("movable_world"):
-		var local_offset = player_inv * obj.global_transform
-		obj.global_transform = base * inv_delta * local_offset
+		var local = anchor.affine_inverse() * obj.global_transform
+		obj.global_transform = anchor * inv_delta * local
 
 func _transition():
-	var next_port = RailGraphManager.get_active_connection(_get_exit_port())
+	var exit_port = _get_exit_port()
+	var options = RailGraphManager.get_connections(exit_port)
+
+	if options.is_empty():
+		speed = 0
+		return
+	
+	var next_port = null
+
+	if is_player_controlled:
+		next_port = RailGraphManager.get_active_connection(exit_port)
+	else:
+		next_port = ai_choose_branch(exit_port, options)
 
 	if next_port == null:
-		active = false
 		speed = 0
 		return
 	
@@ -114,6 +170,9 @@ func _get_exit_port() -> Node3D:
 		return current_segment.get_node("PortA")
 
 func _input(event):
+	if TrainManager.active_train != self:
+		return
+	
 	if event.is_action_pressed("ui_up"):
 		print("Next Junction")
 		_cycle_switch(1)
@@ -139,6 +198,9 @@ func _cycle_switch(dir: int):
 	RailGraphManager.set_switch(exit_port, selected_port)
 
 func can_switch() -> bool:
+	if current_segment == null:
+		return false
+
 	var curve = current_segment.path.curve
 	var length = curve.get_baked_length()
 
@@ -271,3 +333,10 @@ func _get_exit_from_segment(port: Node3D) -> Node3D:
 		return seg.get_node("PortB")
 	else:
 		return seg.get_node("PortA")
+
+func ai_choose_branch(exit_port: Node3D, options: Array) -> Node3D:
+	var active = RailGraphManager.get_active_connection(exit_port)
+	if active != null:
+		return active
+	
+	return options[0]

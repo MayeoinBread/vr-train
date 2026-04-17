@@ -15,46 +15,49 @@ var active_switches := {}
 # key: Node3D (switch port or switch segment identifier)
 # value: Node3D (selected next port)
 
-var start_port: Node3D
+# var start_port: Node3D
+
+var spawn_points: Array = []
 
 var track_root: Node
 var connections_source: Node
 
-func get_default_start_port() -> Node3D:
-	for port in connections.keys():
-		return port
-	
-	return null
-
-func _ready() -> void:
-	print("REady")
-
-func initialise(track: Node, track_connections: Node, start_node: Node3D):
-	print("Initialise")
+func initialise(track: Node, track_connections: Node):
 	track_root = track
 	connections_source = track_connections
 	build_graph(track_root)
 	apply_connections(connections_source)
-	start_port = start_node
 
 	_build_junction_ordering()
 
 	_build_signals()
 
+func register_spawn_point(spawn_point: Node3D) -> void:
+	if spawn_point == null:
+		return
+	
+	if spawn_point not in spawn_points:
+		spawn_points.append(spawn_point)
+
+func get_spawn_port(index: int = 0) -> Node3D:
+	if spawn_points.is_empty():
+		print("No spawn points")
+		return null
+	
+	var sp = spawn_points[index % spawn_points.size()]
+	print("Have a spawn")
+	print(sp)
+	print(sp.port)
+	return sp.port
+
 func _build_signals() -> void:
-	print("BUILD SIGNALS")
 	for s in junction_signals.values():
 		if is_instance_valid(s):
 			s.queue_free()
 	junction_signals.clear()
 
-	print("FOREACH")
-
-	print(connections.keys())
-
 	for exit_port in connections.keys():
 		var options = get_connections(exit_port)
-		print("PORT: ", exit_port, "OPTIONS: ", options.size())
 		if options.size() <= 1:
 			continue
 		
@@ -305,11 +308,6 @@ func _get_direction_label(exit_port: Node3D, target_port: Node3D) -> String:
 
 	var dot = forward.dot(dir)
 	var cross = forward.cross(dir)
-
-	print(segment)
-	print(dot)
-	print(cross)
-	print("")
 
 	if dot > 0.7:
 		return "straight"

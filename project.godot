@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 XRToolsUserSettings="*uid://bqgb8i74tm0t"
 XRToolsRumbleManager="*uid://by853dk86g1qw"
 RailGraphManager="*uid://doowrdw818f2m"
+TrainManager="*uid://b6uvtb4id8wnj"
 
 [editor_plugins]
 

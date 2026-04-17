@@ -2,11 +2,13 @@
 
 [ext_resource type="Script" uid="uid://csvvaa01ciwy7" path="res://main.gd" id="1_lquwl"]
 [ext_resource type="PackedScene" uid="uid://cm1b50f6vx3vg" path="res://character.tscn" id="2_0xm2m"]
-[ext_resource type="PackedScene" uid="uid://bmi8hnmog48dn" path="res://TrackTest1.tscn" id="5_272bh"]
+[ext_resource type="PackedScene" uid="uid://bviimvilp1de8" path="res://track.tscn" id="5_5vw27"]
 [ext_resource type="Script" uid="uid://doowrdw818f2m" path="res://RailGraphManager.gd" id="5_lquwl"]
 [ext_resource type="Script" uid="uid://cjs8k0bi2vchv" path="res://DesktopChar.gd" id="6_7mycd"]
 [ext_resource type="PackedScene" uid="uid://boxwcudkrvasr" path="res://DebugTrain.tscn" id="6_272bh"]
 [ext_resource type="PackedScene" uid="uid://cson8qgnaqv2a" path="res://JunctionIndicator.tscn" id="7_272bh"]
+[ext_resource type="Script" uid="uid://b6uvtb4id8wnj" path="res://TrainManager.gd" id="8_5vw27"]
+[ext_resource type="PackedScene" uid="uid://dba1gqc7roggf" path="res://AITrain.tscn" id="9_kek77"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_0xm2m"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -48,8 +50,22 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.8, 0)
 [node name="RailGraphManager" type="Node" parent="." unique_id=2020855854]
 script = ExtResource("5_lquwl")
 
-[node name="Track" parent="." unique_id=1517222345 groups=["movable_world"] instance=ExtResource("5_272bh")]
+[node name="Track" parent="." unique_id=1060532867 groups=["movable_world"] instance=ExtResource("5_5vw27")]
 
-[node name="DebugTrain" parent="." unique_id=1368829044 instance=ExtResource("6_272bh")]
+[node name="DebugTrain" parent="." unique_id=1368829044 node_paths=PackedStringArray("world_anchor") instance=ExtResource("6_272bh")]
+world_anchor = NodePath("../WorldAnchor")
+is_player_controlled = true
 speed = 6.0
 indicator_scene = ExtResource("7_272bh")
+
+[node name="WorldAnchor" type="Node3D" parent="." unique_id=515830666]
+
+[node name="TrainManager" type="Node3D" parent="." unique_id=1573163281]
+script = ExtResource("8_5vw27")
+
+[node name="AITrain" parent="." unique_id=552915092 instance=ExtResource("9_kek77")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 0, -35)
+
+[node name="AITrain2" parent="." unique_id=1181951399 instance=ExtResource("9_kek77")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, -20)
+spawn_point_index = 2

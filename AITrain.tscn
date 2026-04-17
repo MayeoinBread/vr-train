@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://dba1gqc7roggf"]
+
+[ext_resource type="Script" uid="uid://dgmuijs3kx4g2" path="res://DebugTrain.gd" id="1_48665"]
+[ext_resource type="PackedScene" uid="uid://cson8qgnaqv2a" path="res://JunctionIndicator.tscn" id="2_qiuar"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_48665"]
+albedo_color = Color(1, 0.41277742, 0.33361515, 1)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_qiuar"]
+material = SubResource("StandardMaterial3D_48665")
+
+[node name="AITrain" type="Node3D" unique_id=1368829044]
+script = ExtResource("1_48665")
+spawn_point_index = 1
+indicator_scene = ExtResource("2_qiuar")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1561449993]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("CapsuleMesh_qiuar")

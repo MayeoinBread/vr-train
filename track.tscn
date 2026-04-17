@@ -3,17 +3,11 @@
 [ext_resource type="PackedScene" uid="uid://b284fc5gsg17" path="res://track_segment.tscn" id="1_mll3j"]
 [ext_resource type="Script" uid="uid://2ly44wjqdec3" path="res://track.gd" id="1_phvr8"]
 [ext_resource type="Script" uid="uid://cxjcpp3banukr" path="res://TrackConnections.gd" id="3_bcvet"]
-
-[sub_resource type="Curve3D" id="Curve3D_bcvet"]
-_data = {
-"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -20),
-"tilts": PackedFloat32Array(0, 0)
-}
-point_count = 2
+[ext_resource type="PackedScene" uid="uid://8602x8lpuu7s" path="res://SpawnPoint.tscn" id="4_8nfsw"]
 
 [sub_resource type="Curve3D" id="Curve3D_8nfsw"]
 _data = {
-"points": PackedVector3Array(0, 0, 0, 0, 0, -10, 0, 0, 0, -10, 0, 0, 0, 0, 0, 15, 0, -15),
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -20),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
@@ -34,21 +28,21 @@ point_count = 2
 
 [sub_resource type="Curve3D" id="Curve3D_82y7p"]
 _data = {
-"points": PackedVector3Array(0, 0, 0, 0, 0, -10, 0, 0, 0, -10, 0, 0, 0, 0, 0, 15, 0, -15),
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -20),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
 
 [sub_resource type="Curve3D" id="Curve3D_3hrad"]
 _data = {
-"points": PackedVector3Array(0, 0, 0, 0, 0, -10, 0, 0, 0, 10, 0, 0, 0, 0, 0, -15, 0, -15),
+"points": PackedVector3Array(0, 0, 0, 0, 0, -10, 0, 0, 0, -10, 0, 0, 0, 0, 0, 15, 0, -15),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
 
 [sub_resource type="Curve3D" id="Curve3D_t1oi4"]
 _data = {
-"points": PackedVector3Array(0, 0, 0, 0, 0, -10, 0, 0, 0, 10, 0, 0, 0, 0, 0, -15, 0, -15),
+"points": PackedVector3Array(0, 0, 0, 0, 0, -10, 0, 0, 0, -10, 0, 0, 0, 0, 0, 15, 0, -15),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
@@ -67,22 +61,35 @@ _data = {
 }
 point_count = 2
 
-[node name="Track" type="Node3D" unique_id=1060532867 node_paths=PackedStringArray("start_port")]
+[sub_resource type="Curve3D" id="Curve3D_vhw2h"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, -10, 0, 0, 0, 10, 0, 0, 0, 0, 0, -15, 0, -15),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="Curve3D" id="Curve3D_07pqx"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, -10, 0, 0, 0, 10, 0, 0, 0, 0, 0, -15, 0, -15),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[node name="Track" type="Node3D" unique_id=1060532867]
 script = ExtResource("1_phvr8")
-start_port = NodePath("Segments/TrackSegment/PortA")
 
 [node name="Segments" type="Node3D" parent="." unique_id=1151386059]
 
 [node name="TrackSegment" parent="Segments" unique_id=469804477 instance=ExtResource("1_mll3j")]
 
 [node name="Path3D" parent="Segments/TrackSegment" index="0" unique_id=1582978415]
-curve = SubResource("Curve3D_bcvet")
+curve = SubResource("Curve3D_8nfsw")
 
 [node name="TrackSegment2" parent="Segments" unique_id=3744495 instance=ExtResource("1_mll3j")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -20)
 
 [node name="Path3D" parent="Segments/TrackSegment2" index="0" unique_id=1582978415]
-curve = SubResource("Curve3D_8nfsw")
+curve = SubResource("Curve3D_vr403")
 
 [node name="PortB" parent="Segments/TrackSegment2" index="3" unique_id=577691231]
 transform = Transform3D(-8.742278e-08, 0, 1, 0, 1, 0, -1, 0, -8.742278e-08, 15, 0, -15)
@@ -91,7 +98,7 @@ transform = Transform3D(-8.742278e-08, 0, 1, 0, 1, 0, -1, 0, -8.742278e-08, 15, 
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 15.000001, 0, -35)
 
 [node name="Path3D" parent="Segments/TrackSegment3" index="0" unique_id=1582978415]
-curve = SubResource("Curve3D_vr403")
+curve = SubResource("Curve3D_ucvjy")
 
 [node name="PortB" parent="Segments/TrackSegment3" index="3" unique_id=577691231]
 transform = Transform3D(-8.742278e-08, 0, 1, 0, 1, 0, -1, 0, -8.742278e-08, 15, 0, -15)
@@ -99,11 +106,14 @@ transform = Transform3D(-8.742278e-08, 0, 1, 0, 1, 0, -1, 0, -8.742278e-08, 15, 
 [node name="TrackSegment4" parent="Segments" unique_id=1229971422 instance=ExtResource("1_mll3j")]
 transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 30.000002, 0, -19.999998)
 
+[node name="Path3D" parent="Segments/TrackSegment4" index="0" unique_id=1582978415]
+curve = SubResource("Curve3D_82y7p")
+
 [node name="TrackSegment5" parent="Segments" unique_id=1781243795 instance=ExtResource("1_mll3j")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 30, 0, -2.6226833e-06)
 
 [node name="Path3D" parent="Segments/TrackSegment5" index="0" unique_id=1582978415]
-curve = SubResource("Curve3D_ucvjy")
+curve = SubResource("Curve3D_3hrad")
 
 [node name="PortB" parent="Segments/TrackSegment5" index="3" unique_id=577691231]
 transform = Transform3D(-8.742278e-08, 0, 1, 0, 1, 0, -1, 0, -8.742278e-08, 15, 0, -15)
@@ -112,7 +122,7 @@ transform = Transform3D(-8.742278e-08, 0, 1, 0, 1, 0, -1, 0, -8.742278e-08, 15, 
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 15, 0, 15)
 
 [node name="Path3D" parent="Segments/TrackSegment6" index="0" unique_id=1582978415]
-curve = SubResource("Curve3D_82y7p")
+curve = SubResource("Curve3D_t1oi4")
 
 [node name="PortB" parent="Segments/TrackSegment6" index="3" unique_id=577691231]
 transform = Transform3D(-8.742278e-08, 0, 1, 0, 1, 0, -1, 0, -8.742278e-08, 15, 0, -15)
@@ -121,7 +131,7 @@ transform = Transform3D(-8.742278e-08, 0, 1, 0, 1, 0, -1, 0, -8.742278e-08, 15, 
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -20)
 
 [node name="Path3D" parent="Segments/TrackSegment7" index="0" unique_id=1582978415]
-curve = SubResource("Curve3D_3hrad")
+curve = SubResource("Curve3D_l1aip")
 
 [node name="PortB" parent="Segments/TrackSegment7" index="3" unique_id=577691231]
 transform = Transform3D(8.742278e-08, 0, -1, 0, 1, 0, 1, 0, 8.742278e-08, -15, 0, -15)
@@ -130,7 +140,7 @@ transform = Transform3D(8.742278e-08, 0, -1, 0, 1, 0, 1, 0, 8.742278e-08, -15, 0
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -15.000002, 0, -35)
 
 [node name="Path3D" parent="Segments/TrackSegment8" index="0" unique_id=1582978415]
-curve = SubResource("Curve3D_t1oi4")
+curve = SubResource("Curve3D_t0gok")
 
 [node name="PortB" parent="Segments/TrackSegment8" index="3" unique_id=577691231]
 transform = Transform3D(8.742278e-08, 0, -1, 0, 1, 0, 1, 0, 8.742278e-08, -15, 0, -15)
@@ -142,7 +152,7 @@ transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, -29.
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -30, 0, 2.6226833e-06)
 
 [node name="Path3D" parent="Segments/TrackSegment10" index="0" unique_id=1582978415]
-curve = SubResource("Curve3D_l1aip")
+curve = SubResource("Curve3D_vhw2h")
 
 [node name="PortB" parent="Segments/TrackSegment10" index="3" unique_id=577691231]
 transform = Transform3D(8.742278e-08, 0, -1, 0, 1, 0, 1, 0, 8.742278e-08, -15, 0, -15)
@@ -151,7 +161,7 @@ transform = Transform3D(8.742278e-08, 0, -1, 0, 1, 0, 1, 0, 8.742278e-08, -15, 0
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, -15.000001, 0, 14.999999)
 
 [node name="Path3D" parent="Segments/TrackSegment11" index="0" unique_id=1582978415]
-curve = SubResource("Curve3D_t0gok")
+curve = SubResource("Curve3D_07pqx")
 
 [node name="PortB" parent="Segments/TrackSegment11" index="3" unique_id=577691231]
 transform = Transform3D(8.742278e-08, 0, -1, 0, 1, 0, 1, 0, 8.742278e-08, -15, 0, -15)
@@ -221,9 +231,23 @@ connections = Array[Dictionary]([{
 }])
 sphere_size = 0.2
 
+[node name="SpawnPoints" type="Node3D" parent="." unique_id=547904787]
+
+[node name="SpawnPoint" parent="SpawnPoints" unique_id=1343302917 node_paths=PackedStringArray("port") instance=ExtResource("4_8nfsw")]
+port = NodePath("../../Segments/TrackSegment/PortA")
+
+[node name="SpawnPoint2" parent="SpawnPoints" unique_id=221607346 node_paths=PackedStringArray("port") instance=ExtResource("4_8nfsw")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 0, -35)
+port = NodePath("../../Segments/TrackSegment8/PortA")
+
+[node name="SpawnPoint3" parent="SpawnPoints" unique_id=198314335 node_paths=PackedStringArray("port") instance=ExtResource("4_8nfsw")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, -20)
+port = NodePath("../../Segments/TrackSegment4/PortA")
+
 [editable path="Segments/TrackSegment"]
 [editable path="Segments/TrackSegment2"]
 [editable path="Segments/TrackSegment3"]
+[editable path="Segments/TrackSegment4"]
 [editable path="Segments/TrackSegment5"]
 [editable path="Segments/TrackSegment6"]
 [editable path="Segments/TrackSegment7"]
