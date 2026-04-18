@@ -63,9 +63,7 @@ indicator_scene = ExtResource("7_272bh")
 [node name="TrainManager" type="Node3D" parent="." unique_id=1573163281]
 script = ExtResource("8_5vw27")
 
-[node name="AITrain" parent="." unique_id=552915092 instance=ExtResource("9_kek77")]
+[node name="AITrain" parent="." unique_id=552915092 node_paths=PackedStringArray("world_anchor") instance=ExtResource("9_kek77")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 0, -35)
-
-[node name="AITrain2" parent="." unique_id=1181951399 instance=ExtResource("9_kek77")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, -20)
-spawn_point_index = 2
+world_anchor = NodePath("../WorldAnchor")
+speed = 3.9

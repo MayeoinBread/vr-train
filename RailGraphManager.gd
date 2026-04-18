@@ -80,7 +80,7 @@ func _update_signal(exit_port: Node3D) -> void:
 	if m_sig == null:
 		return
 	
-	var target_port = get_active_connection(exit_port)
+	var target_port = resolve_next_port(exit_port)
 	if target_port == null:
 		return
 
@@ -250,20 +250,23 @@ func get_active_connection(exit_port: Node3D) -> Node3D:
 	if exit_port in active_switches:
 		return active_switches[exit_port]
 	
-	var options = get_connections(exit_port)
-	if options.is_empty():
-		return null
-	
-	return options[0]  # default fallback
+	return null
 
 func resolve_next_port(port) -> Node3D:
 	var options = connections.get(port, [])
 	if options.is_empty():
 		return null
 
-	if active_switches.has(port):
-		return active_switches[port]
+	var active = active_switches.get(port, null)
+
+	if active != null and not options.has(active):
+		active_switches.erase(port)
+		active = null
 	
+	if active != null:
+		return active
+
+	# safe fallback (only when nothing is explicitly set)
 	return options[0]
 
 func get_connections(port: Node3D) -> Array:
@@ -271,7 +274,7 @@ func get_connections(port: Node3D) -> Array:
 
 func get_junction_state(exit_port: Node3D) -> Dictionary:
 	var options = get_connections(exit_port)
-	var active = get_active_connection(exit_port)
+	var active = resolve_next_port(exit_port)
 
 	return {
 		"exit_port": exit_port,

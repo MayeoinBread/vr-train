@@ -25,6 +25,9 @@ var markers_backward: Array[MeshInstance3D]
 
 var station_marker: MeshInstance3D
 
+var occupied_by: Node = null
+var reserved_by: Node = null
+
 # Optional metadata
 @export var speed_limit := 20
 @export var is_station := false

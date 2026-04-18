@@ -12,7 +12,12 @@ var visual_state: TrackVisualState = TrackVisualState.CRUISE_PREVIEW
 
 @export var is_player_controlled: bool = false
 
-@export var speed: float = 2.0
+@export var speed:= 2.0
+@export var brake_speed:= 0.5
+@export var accel_rate:= 1.2
+@export var brake_rate:= 2.5
+@export var stop_distance:= 2.0
+var default_speed: float
 @export var auto_start: bool = true
 
 @export var switch_cutoff_distance := 5.0
@@ -35,9 +40,8 @@ var direction: int = 1
 # var last_pos: Vector3
 var previous_train_transform: Transform3D
 
-var pending_switch_index: int = 0
-
 func _ready() -> void:
+	default_speed = speed
 	TrainManager.register_train(self)
 	
 	if is_player_controlled:
@@ -57,8 +61,15 @@ func reset() -> void:
 		_attach_to_port(port)
 
 func _attach_to_port(port: Node3D):
+	if current_segment:
+		current_segment.occupied_by = null
+
 	current_port = port
 	current_segment = port.get_parent()
+
+	# Reserve new segment for train
+	current_segment.occupied_by = self
+	current_segment.reserved_by = null
 
 	var curve: Curve3D = current_segment.path.curve
 	var length := curve.get_baked_length()
@@ -75,11 +86,8 @@ func _attach_to_port(port: Node3D):
 	# 	world_anchor.global_transform = current_segment.get_sample_transform(distance_along)
 
 	var start_transform = current_segment.get_sample_transform(distance_along)
-	print("Origin for train:")
-	print(start_transform)
-
+	
 	if TrainManager.active_train == self:
-		print("ACTIVE TRAIN")
 		_align_world_to_spawn(start_transform)
 	
 	previous_train_transform = current_segment.get_sample_transform(distance_along)
@@ -108,7 +116,30 @@ func _physics_process(delta: float) -> void:
 	if current_segment == null:
 		return
 
-	var is_player = TrainManager.active_train == self
+	if not is_player_controlled:
+
+		var exit_port = _get_exit_port()
+		var options = RailGraphManager.get_connections(exit_port)
+
+		var next_port = null
+		if options.size() > 0:
+			next_port = ai_choose_branch(exit_port, options)
+		
+		var blocked = false
+		if next_port != null:
+			var next_segment = next_port.get_parent()
+			if next_segment.reserved_by == null:
+				next_segment.reserved_by = self
+			blocked = _is_next_segment_blocked(next_port)
+
+		var target_speed = default_speed
+		if blocked:
+			target_speed = 0
+		elif _should_brake(exit_port):
+			target_speed = brake_speed
+		
+		var rate = brake_rate if target_speed < speed else accel_rate
+		speed = move_toward(speed, target_speed, rate * delta)
 
 	var delta_move = speed * delta * direction
 	distance_along += delta_move
@@ -122,7 +153,7 @@ func _physics_process(delta: float) -> void:
 	
 	var target_transform = current_segment.get_sample_transform(distance_along)
 	
-	if is_player:
+	if is_player_controlled:
 		var delta_transform = previous_train_transform.affine_inverse() * target_transform
 		# move_world_relative_to_player(delta_transform)
 		apply_world_shift(delta_transform)
@@ -130,10 +161,42 @@ func _physics_process(delta: float) -> void:
 		world_anchor.global_transform = current_segment.get_sample_transform(distance_along)
 		previous_train_transform = current_segment.get_sample_transform(distance_along)
 	else:
-		global_transform = target_transform
+		# global_transform = target_transform
+		var anchor = world_anchor.global_transform
+		global_transform = anchor * target_transform
 		previous_train_transform = target_transform
 
+func _should_brake(exit_port: Node3D) -> bool:
+	var options = RailGraphManager.get_connections(exit_port)
+	if options.is_empty():
+		return false
+	
+	for port in options:
+		var seg = port.get_parent()
+		if seg.occupied_by != null and seg.occupied_by != self:
+			return true
+	
+	return false
 
+func _try_resume():
+	var exit_port = _get_exit_port()
+	
+	var options = RailGraphManager.get_connections(exit_port)
+	
+	if options.is_empty():
+		return
+
+	var next_port = ai_choose_branch(exit_port, options)
+	
+	if next_port == null:
+		return
+
+	var next_segment = next_port.get_parent()
+	if next_segment.occupied_by != null and next_segment.occupied_by != self:
+		return
+
+	_attach_to_port(next_port)
+	
 func apply_world_shift(delta_transform: Transform3D) -> void:
 	var anchor = world_anchor.global_transform
 	var inv_delta = delta_transform.affine_inverse()
@@ -153,15 +216,41 @@ func _transition():
 	var next_port = null
 
 	if is_player_controlled:
-		next_port = RailGraphManager.get_active_connection(exit_port)
+		next_port = RailGraphManager.resolve_next_port(exit_port)
 	else:
 		next_port = ai_choose_branch(exit_port, options)
 
 	if next_port == null:
 		speed = 0
+		if not is_player_controlled:
+			reparent(get_tree().get_first_node_in_group("movable_world"))
 		return
 	
+	if not is_player_controlled:
+		reparent(get_tree().get_first_node_in_group("movable_world"))
+	
+	var next_segment = next_port.get_parent()
+	if not is_player_controlled and _is_next_segment_blocked(next_port):
+		speed = 0
+		return
+
+	next_segment.reserved_by = self
+	
 	_attach_to_port(next_port)
+
+func _is_next_segment_blocked(next_port: Node3D) -> bool:
+	if next_port == null:
+		return false
+	
+	var next_segment = next_port.get_parent()
+
+	if next_segment.occupied_by != null and next_segment.occupied_by != self:
+		return true
+
+	if next_segment.reserved_by != null and next_segment.reserved_by != self:
+		return true
+	
+	return false
 
 func _get_exit_port() -> Node3D:
 	if direction == 1:
@@ -181,7 +270,9 @@ func _input(event):
 		_cycle_switch(-1)
 
 func _cycle_switch(dir: int):
-	if not can_switch():
+	var cans = can_switch()
+	print("CanSwitch: ", cans)
+	if not cans:
 		return
 	
 	var exit_port = _get_exit_port()
@@ -190,11 +281,18 @@ func _cycle_switch(dir: int):
 	if options.size() <= 1:
 		return
 
-	pending_switch_index = (pending_switch_index + dir) % options.size()
-	if pending_switch_index < 0:
-		pending_switch_index += options.size()
+	var current = RailGraphManager.resolve_next_port(exit_port)
+	var index = options.find(current)
+
+	if index == -1:
+		index = 0
 	
-	var selected_port = options[pending_switch_index]
+	index = (index + dir) % options.size()
+	if index < 0:
+		index += options.size()
+
+	var selected_port = options[index]
+
 	RailGraphManager.set_switch(exit_port, selected_port)
 
 func can_switch() -> bool:
@@ -216,7 +314,7 @@ func update_indicators(exit_port: Node3D) -> void:
 			ind.visible = false
 		return
 	
-	var active_port = RailGraphManager.get_active_connection(exit_port)
+	var active_port = RailGraphManager.resolve_next_port(exit_port)
 	var index := 0
 
 	for i in options.size():
@@ -312,7 +410,7 @@ func _get_lookahead_path(start_port: Node3D, depth: int) -> Array[Node3D]:
 		if exit_port == null:
 			break
 
-		var next_port = RailGraphManager.get_active_connection(exit_port)
+		var next_port = RailGraphManager.resolve_next_port(exit_port)
 		if next_port == null:
 			var options = RailGraphManager.get_connections(exit_port)
 			if options.is_empty():
@@ -335,8 +433,8 @@ func _get_exit_from_segment(port: Node3D) -> Node3D:
 		return seg.get_node("PortA")
 
 func ai_choose_branch(exit_port: Node3D, options: Array) -> Node3D:
-	var active = RailGraphManager.get_active_connection(exit_port)
-	if active != null:
-		return active
+	var resolved = RailGraphManager.resolve_next_port(exit_port)
+	if resolved != null:
+		return resolved
 	
-	return options[0]
+	return options[0]  # Fallback
