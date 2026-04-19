@@ -37,9 +37,10 @@ var indicator_materials: Array[StandardMaterial3D] = []
 var current_port: Node3D
 var current_segment: Node3D
 
-# var reserved_segments: Array = []
-
 var planned_reservation: Array = []
+var active_reservations: Array = []
+
+var pending_decision_exit_port: Node3D = null
 
 var distance_along: float = 0.0
 var direction: int = 1
@@ -70,29 +71,18 @@ func reset() -> void:
 		_attach_to_port(port)
 
 func _attach_to_port(port: Node3D):
-	if current_segment:
-		if current_segment.occupied_by == self:
-			current_segment.occupied_by = null
-		if current_segment.reserved_by == self:
-			current_segment.reserved_by = null
-		RailGraphManager.update_signals_for_segment(current_segment)
+	if current_segment != null and current_segment.occupied_by == self:
+		RailGraphManager.set_occupied(current_segment, null)
 
 	# update current segment to the new segment
 	current_port = port
 	current_segment = port.get_parent()
 
 	# Reserve new segment for train
-	current_segment.occupied_by = self
-	current_segment.reserved_by = null
+	RailGraphManager.set_occupied(current_segment, self)
 
-	RailGraphManager.update_signals_for_segment(current_segment)
-	
-	planned_reservation = _reserve_lookahead(port)
-	if self.name.contains("AI"):
-		print(self.name)
-		print(port)
-		print(planned_reservation)
-		print(" ")
+	pending_decision_exit_port = _get_exit_port()
+	# RailGraphManager.resolve_reservations()
 
 	var curve: Curve3D = current_segment.path.curve
 	var length := curve.get_baked_length()
@@ -137,66 +127,18 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var exit_port = _get_exit_port()
-	var options = RailGraphManager.get_connections(exit_port)
 
-	var next_port = null
+	pending_decision_exit_port = exit_port
 
-	if is_player_controlled:
-		if options.size() > 0:
-			next_port = RailGraphManager.resolve_next_port(exit_port)
-			# planned_reservation = _reserve_lookahead(next_port)
-	else:
-		if options.size() > 0:
-			var best_score = INF
-
-			for p in options:
-				var seg = p.get_parent()
-				if seg == null:
-					continue
-				
-				var score = 0.0
-
-				# 1. hard penalties (blocked segments)
-				if seg.occupied_by != null and seg.occupied_by != self:
-					score += 1000
-				
-				if seg.reserved_by != null and seg.reserved_by != self:
-					score += 100
-				
-				# 2. soft preference (keep current switch choice if valid)
-				if p == RailGraphManager.resolve_next_port(exit_port):
-					score -= 10
-				
-				if score < best_score:
-					best_score = score
-					next_port = p
-
-			if next_port == null:
-				next_port = options[0]
-
-		# if next_port != null:
-			# planned_reservation = _reserve_lookahead(next_port)
-
-		var m_signal = RailGraphManager.get_signal_state(exit_port, self)
-		var target_speed = default_speed
-		
-		var mc = current_segment.path.curve
-		var ml = mc.get_baked_length()
-
-		var dist_to_end = (
-			ml - distance_along if direction == 1
-			else distance_along
-		)
-
-		if m_signal == "red":
-			target_speed = 0
-		elif m_signal == "yellow":
-			target_speed = brake_speed
-		elif dist_to_end < stop_distance:
-			target_speed = min(target_speed, brake_speed)
-		
-		var rate = brake_rate if target_speed < speed else accel_rate
-		speed = move_toward(speed, target_speed, rate * delta)
+	_process_ai_decision()
+	
+	_update_speed(delta, exit_port)
+	
+	if not is_player_controlled:
+		if speed == 0:
+			add_to_group("movable_world")
+		else:
+			remove_from_group("movable_world")
 
 	var delta_move = speed * delta * direction
 	distance_along += delta_move
@@ -219,7 +161,61 @@ func _physics_process(delta: float) -> void:
 	else:
 		var anchor = world_anchor.global_transform
 		global_transform = anchor * target_transform
+
+func _update_speed(delta: float, exit_port: Node3D) -> void:
+	var m_signal = RailGraphManager.get_signal_state(exit_port, self)
+	var target_speed = default_speed
+
+	var curve = current_segment.path.curve
+	var length = curve.get_baked_length()
+
+	var dist_to_end = (
+		length - distance_along if direction == 1 else distance_along
+	)
+
+	if m_signal == "red":
+		target_speed = 0
+	elif m_signal == "yellow":
+		target_speed = brake_speed
+	elif dist_to_end < stop_distance:
+		target_speed = min(target_speed, brake_speed)
 	
+	var rate = brake_rate if target_speed < speed else accel_rate
+	speed = move_toward(speed, target_speed, rate * delta)
+
+func _evaluate_next_port(exit_port: Node3D) -> Node3D:
+	var options = RailGraphManager.get_connections(exit_port)
+	if options.is_empty():
+		return null
+	
+	if is_player_controlled:
+		return RailGraphManager.resolve_next_port(exit_port)
+	
+	var best_score = INF
+	var best_port = null
+
+	for p in options:
+		var seg = p.get_parent()
+		if seg == null:
+			continue
+		
+		var score = 0.0
+
+		if seg.occupied_by != null and seg.occupied_by != self:
+			score += 1000
+		
+		if seg.reserved_by != null and seg.reserved_by != self:
+			score += 100
+		
+		if p == RailGraphManager.resolve_next_port(exit_port):
+			score -= 10
+		
+		if score < best_score:
+			best_score = score
+			best_port = p
+	
+	return best_port if best_port != null else options[0]
+
 func apply_world_shift(delta_transform: Transform3D) -> void:
 	var anchor = world_anchor.global_transform
 	var inv_delta = delta_transform.affine_inverse()
@@ -236,16 +232,12 @@ func _transition():
 		speed = 0
 		return
 		
-	var next_port = RailGraphManager.resolve_next_port(exit_port)
-	
+	# var next_port = RailGraphManager.resolve_next_port(exit_port)
+	var next_port = _evaluate_next_port(exit_port)
+
 	if next_port == null:
 		speed = 0
-		if not is_player_controlled:
-			add_to_group("movable_world")
 		return
-	
-	if not is_player_controlled:
-		remove_from_group("movable_world")
 	
 	var next_segment = next_port.get_parent()
 	if not is_player_controlled and not next_segment.can_enter(self):
@@ -437,23 +429,56 @@ func _get_next_port(exit_port: Node3D) -> Node3D:
 func _reserve_lookahead(start_port: Node3D) -> Array:
 	var result: Array = []
 
-	var port = _get_exit_from_segment(start_port)  # TODO probably this...
-	# var port = RailGraphManager.resolve_next_port(start_port)
+	var port = start_port
 
 	for i in lookahead_reserve:
 		if port == null:
 			break
 		
-		var next_port = _get_exit_from_segment(RailGraphManager.resolve_next_port(port))  # TODO this too...
-		# var next_port = RailGraphManager.resolve_next_port(port)
-		if next_port == null:
-			break
-		
-		var seg = next_port.get_parent()
+		var seg = port.get_parent()
 		if seg == null:
 			break
 		
 		result.append(seg)
-		port = next_port
+
+		var exit_port = _get_exit_from_segment(port)
+		if exit_port == null:
+			break
+		
+		port = RailGraphManager.resolve_next_port(exit_port)
 	
-	return result#
+	return result
+
+func _update_reservations(new_plan: Array) -> void:
+	for seg in active_reservations:
+		if seg not in new_plan and seg.reserved_by == self:
+			seg.reserved_by = null
+			RailGraphManager.update_signals_for_segment(seg)
+	
+	for seg in new_plan:
+		if seg.reserved_by == null or seg.reserved_by == self:
+			seg.reserved_by = self
+			RailGraphManager.update_signals_for_segment(seg)
+	
+	active_reservations = new_plan
+
+func _process_ai_decision():
+	if is_player_controlled:
+		return
+	
+	if pending_decision_exit_port == null:
+		return
+	
+	var next_port = _evaluate_next_port(pending_decision_exit_port)
+
+	_update_intent(next_port)
+	pending_decision_exit_port = null
+
+func _update_intent(next_port: Node3D) -> void:
+	if next_port != null:
+		var new_plan = _reserve_lookahead(next_port)
+		planned_reservation = new_plan
+	else:
+		planned_reservation = []
+
+	RailGraphManager.submit_intent(self, planned_reservation)

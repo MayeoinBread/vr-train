@@ -17,6 +17,8 @@ var active_switches := {}
 
 # var start_port: Node3D
 
+var reservation_intents := {}
+
 var spawn_points: Array = []
 
 var segments: Array = []
@@ -372,15 +374,15 @@ func resolve_reservations() -> void:
 	
 	var trains = TrainManager.trains
 
-	for seg in segments:
-		seg.reserved_by = null
-
 	for t in trains:
-		for seg in t.planned_reservation:
+		var intent = reservation_intents.get(t, [])
+		for seg in intent:
 			if not proposed.has(seg):
 				proposed[seg] = []
 			proposed[seg].append(t)
 	
+	var result := {}
+
 	for seg in proposed.keys():
 		var candidates = proposed[seg]
 		var winner = candidates[0]
@@ -391,7 +393,22 @@ func resolve_reservations() -> void:
 			elif t.train_priority == winner.train_priority:
 				if t.get_instance_id() < winner.get_instance_id():
 					winner = t
-		seg.reserved_by = winner
+		
+		result[seg] = winner
+	
+	for seg in segments:
+		seg.reserved_by = null
+	
+	for seg in result.keys():
+		seg.reserved_by = result[seg]
 
 		print(seg.name, seg.reserved_by)
 	print(" ")
+	reservation_intents.clear()
+
+func submit_intent(train: Node, m_segs: Array) -> void:
+	reservation_intents[train] = m_segs
+
+func set_occupied(segment, train):
+	segment.occupied_by = train
+	update_signals_for_segment(segment)
