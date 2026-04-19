@@ -178,5 +178,17 @@ func set_debug_owner_color(col: Color) -> void:
 			
 			mat.albedo_color = col
 			mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-			# mat.emission_enabled = true
-			# mat.emission = col
+
+func can_enter(train: Node3D) -> bool:
+	if occupied_by != null and occupied_by != train:
+		return false
+
+	var other = reserved_by
+	if other != null and other != train:
+		if other.train_priority > train.train_priority:
+			return false
+		
+		if other.train_priority == train.train_priority:
+			return other.get_instance_id() > train.get_instance_id()
+	
+	return true

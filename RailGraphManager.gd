@@ -19,18 +19,26 @@ var active_switches := {}
 
 var spawn_points: Array = []
 
+var segments: Array = []
+
 var track_root: Node
 var connections_source: Node
 
 func initialise(track: Node, track_connections: Node):
 	track_root = track
 	connections_source = track_connections
+	get_segments(track_root)
 	build_graph(track_root)
 	apply_connections(connections_source)
 
 	_build_junction_ordering()
 
 	_build_signals()
+
+func get_segments(track: Node) -> void:
+	for seg in track.get_children():
+		if seg.name.contains("Segment"):
+			segments.append(seg)
 
 func register_spawn_point(spawn_point: Node3D) -> void:
 	if spawn_point == null:
@@ -45,9 +53,6 @@ func get_spawn_port(index: int = 0) -> Node3D:
 		return null
 	
 	var sp = spawn_points[index % spawn_points.size()]
-	print("Have a spawn")
-	print(sp)
-	print(sp.port)
 	return sp.port
 
 func _build_signals() -> void:
@@ -249,6 +254,11 @@ func is_valid_connection(from_port, to_port) -> bool:
 	return ok
 
 func set_switch(exit_port: Node3D, target_port: Node3D) -> void:
+	for port in connections[exit_port]:
+		var seg = port.get_parent()
+		if seg.reserved_by == self and port != target_port:
+			seg.reserved_by = null
+	
 	active_switches[exit_port] = target_port
 	junction_changed.emit(exit_port)
 
@@ -317,8 +327,8 @@ func _get_direction_label(exit_port: Node3D, target_port: Node3D) -> String:
 	else:
 		return "right"
 
-func update_segment_visuals(track: Node3D) -> void:
-	for segment in track.get_children():
+func update_segment_visuals() -> void:
+	for segment in track_root.get_children():
 		if not segment.has_method("set_debug_owner_color"):
 			continue
 		
@@ -330,18 +340,6 @@ func update_segment_visuals(track: Node3D) -> void:
 			col = segment.reserved_by.train_color.darkened(0.4)
 		
 		segment.set_debug_owner_color(col)
-
-func can_enter_segment(train: Node, segment: Node) -> bool:
-	if segment == null:
-		return false
-	
-	if segment.occupied_by != null and segment.occupied_by != train:
-		return false
-	
-	if segment.reserved_by != null and segment.reserved_by != train:
-		return false
-	
-	return true
 
 func update_signals_for_segment(segment: Node3D) -> void:
 	for exit_port in connections.keys():
@@ -368,3 +366,32 @@ func get_signal_state(exit_port: Node3D, requester: Node = null) -> String:
 		return "yellow"
 
 	return "green"
+
+func resolve_reservations() -> void:
+	var proposed := {}
+	
+	var trains = TrainManager.trains
+
+	for seg in segments:
+		seg.reserved_by = null
+
+	for t in trains:
+		for seg in t.planned_reservation:
+			if not proposed.has(seg):
+				proposed[seg] = []
+			proposed[seg].append(t)
+	
+	for seg in proposed.keys():
+		var candidates = proposed[seg]
+		var winner = candidates[0]
+
+		for t in candidates:
+			if t.train_priority > winner.train_priority:
+				winner = t
+			elif t.train_priority == winner.train_priority:
+				if t.get_instance_id() < winner.get_instance_id():
+					winner = t
+		seg.reserved_by = winner
+
+		print(seg.name, seg.reserved_by)
+	print(" ")

@@ -31,7 +31,6 @@ func set_direction_by_string(dir: String):
 			active_index = -1
 
 func set_occupancy_state(state: String):
-	print("SET OCCUPANCY")
 	var colour = Color.GREEN
 	if state == "red":
 		colour = Color.RED
