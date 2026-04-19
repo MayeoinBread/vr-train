@@ -164,3 +164,19 @@ func test_curve_stuff() -> void:
 	print("0:", point0, "1:", point1)
 
 	point0.origin.distance_to(point1.origin)
+
+func set_debug_owner_color(col: Color) -> void:
+
+	var mesh_parent = $TrackBuilder
+	for child in mesh_parent.get_children():
+		if child is MeshInstance3D:
+			var mat: StandardMaterial3D = child.get_surface_override_material(0)
+
+			if mat == null or not (mat is StandardMaterial3D):
+				mat = StandardMaterial3D.new()
+				child.set_surface_override_material(0, mat)
+			
+			mat.albedo_color = col
+			mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			# mat.emission_enabled = true
+			# mat.emission = col

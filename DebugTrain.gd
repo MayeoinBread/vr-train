@@ -12,6 +12,9 @@ var visual_state: TrackVisualState = TrackVisualState.CRUISE_PREVIEW
 
 @export var is_player_controlled: bool = false
 
+@export var train_color: Color = Color(0.2, 0.8, 1.0)
+@export var train_priority: int = 0
+
 @export var speed:= 2.0
 @export var brake_speed:= 0.5
 @export var accel_rate:= 1.2
@@ -25,7 +28,7 @@ var default_speed: float
 @export var indicator_scene: PackedScene
 
 @export var lookahead_steps := 3
-@export var lookahead_spacing := 3.0
+@export var lookahead_reserve := 3
 
 var active_indicator: Node3D
 var junction_indicators: Array[Node3D] = []
@@ -37,7 +40,6 @@ var current_segment: Node3D
 var distance_along: float = 0.0
 var direction: int = 1
 
-# var last_pos: Vector3
 var previous_train_transform: Transform3D
 
 func _ready() -> void:
@@ -62,8 +64,12 @@ func reset() -> void:
 
 func _attach_to_port(port: Node3D):
 	if current_segment:
-		current_segment.occupied_by = null
+		if current_segment.occupied_by == self:
+			current_segment.occupied_by = null
+		if current_segment.reserved_by == self:
+			current_segment.reserved_by = null
 
+	# update current segment to the new segment
 	current_port = port
 	current_segment = port.get_parent()
 
@@ -81,19 +87,14 @@ func _attach_to_port(port: Node3D):
 		distance_along = length
 		direction = -1
 
-	# previous_train_transform = current_segment.get_sample_transform(distance_along)
-	# if TrainManager.active_train == self:
-	# 	world_anchor.global_transform = current_segment.get_sample_transform(distance_along)
-
 	var start_transform = current_segment.get_sample_transform(distance_along)
 	
 	if TrainManager.active_train == self:
 		_align_world_to_spawn(start_transform)
-	
-	previous_train_transform = current_segment.get_sample_transform(distance_along)
+		previous_train_transform = current_segment.get_sample_transform(distance_along)
 
 	update_indicators(_get_exit_port())
-	# _reset_indicator_materials()
+	RailGraphManager.update_segment_visuals(RailGraphManager.track_root)
 
 func _align_world_to_spawn(target: Transform3D) -> void:
 	var world_root = get_tree().get_first_node_in_group("movable_world")
@@ -121,22 +122,32 @@ func _physics_process(delta: float) -> void:
 		var exit_port = _get_exit_port()
 		var options = RailGraphManager.get_connections(exit_port)
 
+		var next_segment = null
 		var next_port = null
-		if options.size() > 0:
-			next_port = ai_choose_branch(exit_port, options)
-		
-		var blocked = false
-		if next_port != null:
-			var next_segment = next_port.get_parent()
-			if next_segment.reserved_by == null:
-				next_segment.reserved_by = self
-			blocked = _is_next_segment_blocked(next_port)
 
+		if options.size() > 0:
+			next_port = RailGraphManager.resolve_next_port(exit_port)
+			
+			if next_port != null:
+				_reserve_lookahead(exit_port)
+				next_segment = next_port.get_parent()
+		
+		var can_proceed = next_segment == null or RailGraphManager.can_enter_segment(self, next_segment)
+		
 		var target_speed = default_speed
-		if blocked:
+		if not can_proceed:
 			target_speed = 0
-		elif _should_brake(exit_port):
-			target_speed = brake_speed
+		else:
+			var mc = current_segment.path.curve
+			var ml = mc.get_baked_length()
+
+			var dist_to_end = (
+				ml - distance_along if direction == 1
+				else distance_along
+			)
+
+			if dist_to_end < stop_distance:
+				target_speed = brake_speed
 		
 		var rate = brake_rate if target_speed < speed else accel_rate
 		speed = move_toward(speed, target_speed, rate * delta)
@@ -155,47 +166,13 @@ func _physics_process(delta: float) -> void:
 	
 	if is_player_controlled:
 		var delta_transform = previous_train_transform.affine_inverse() * target_transform
-		# move_world_relative_to_player(delta_transform)
 		apply_world_shift(delta_transform)
 		
 		world_anchor.global_transform = current_segment.get_sample_transform(distance_along)
 		previous_train_transform = current_segment.get_sample_transform(distance_along)
 	else:
-		# global_transform = target_transform
 		var anchor = world_anchor.global_transform
 		global_transform = anchor * target_transform
-		previous_train_transform = target_transform
-
-func _should_brake(exit_port: Node3D) -> bool:
-	var options = RailGraphManager.get_connections(exit_port)
-	if options.is_empty():
-		return false
-	
-	for port in options:
-		var seg = port.get_parent()
-		if seg.occupied_by != null and seg.occupied_by != self:
-			return true
-	
-	return false
-
-func _try_resume():
-	var exit_port = _get_exit_port()
-	
-	var options = RailGraphManager.get_connections(exit_port)
-	
-	if options.is_empty():
-		return
-
-	var next_port = ai_choose_branch(exit_port, options)
-	
-	if next_port == null:
-		return
-
-	var next_segment = next_port.get_parent()
-	if next_segment.occupied_by != null and next_segment.occupied_by != self:
-		return
-
-	_attach_to_port(next_port)
 	
 func apply_world_shift(delta_transform: Transform3D) -> void:
 	var anchor = world_anchor.global_transform
@@ -207,19 +184,14 @@ func apply_world_shift(delta_transform: Transform3D) -> void:
 
 func _transition():
 	var exit_port = _get_exit_port()
-	var options = RailGraphManager.get_connections(exit_port)
 
+	var options = RailGraphManager.get_connections(exit_port)
 	if options.is_empty():
 		speed = 0
 		return
+		
+	var next_port = RailGraphManager.resolve_next_port(exit_port)
 	
-	var next_port = null
-
-	if is_player_controlled:
-		next_port = RailGraphManager.resolve_next_port(exit_port)
-	else:
-		next_port = ai_choose_branch(exit_port, options)
-
 	if next_port == null:
 		speed = 0
 		if not is_player_controlled:
@@ -230,27 +202,11 @@ func _transition():
 		reparent(get_tree().get_first_node_in_group("movable_world"))
 	
 	var next_segment = next_port.get_parent()
-	if not is_player_controlled and _is_next_segment_blocked(next_port):
+	if not is_player_controlled and not RailGraphManager.can_enter_segment(self, next_segment):
 		speed = 0
 		return
-
-	next_segment.reserved_by = self
 	
 	_attach_to_port(next_port)
-
-func _is_next_segment_blocked(next_port: Node3D) -> bool:
-	if next_port == null:
-		return false
-	
-	var next_segment = next_port.get_parent()
-
-	if next_segment.occupied_by != null and next_segment.occupied_by != self:
-		return true
-
-	if next_segment.reserved_by != null and next_segment.reserved_by != self:
-		return true
-	
-	return false
 
 func _get_exit_port() -> Node3D:
 	if direction == 1:
@@ -350,8 +306,6 @@ func update_indicators(exit_port: Node3D) -> void:
 
 			var target_color = Color(base_color.r, base_color.g, base_color.b, alpha)
 
-			# var current = mat.albedo_color
-			# mat.albedo_color = current.lerp(target_color, get_process_delta_time() * 8.0)
 			mat.albedo_color = target_color
 
 			index += 1
@@ -409,13 +363,10 @@ func _get_lookahead_path(start_port: Node3D, depth: int) -> Array[Node3D]:
 
 		if exit_port == null:
 			break
-
+		
 		var next_port = RailGraphManager.resolve_next_port(exit_port)
 		if next_port == null:
-			var options = RailGraphManager.get_connections(exit_port)
-			if options.is_empty():
-				break
-			next_port = options[0]
+			break
 
 		port = next_port
 
@@ -432,9 +383,41 @@ func _get_exit_from_segment(port: Node3D) -> Node3D:
 	else:
 		return seg.get_node("PortA")
 
-func ai_choose_branch(exit_port: Node3D, options: Array) -> Node3D:
-	var resolved = RailGraphManager.resolve_next_port(exit_port)
-	if resolved != null:
-		return resolved
-	
-	return options[0]  # Fallback
+func _get_next_port(exit_port: Node3D) -> Node3D:
+	return RailGraphManager.resolve_next_port(exit_port)
+
+func _reserve_lookahead(start_port: Node3D) -> void:
+	var port = start_port
+
+	for i in lookahead_reserve:
+		if port == null:
+			return
+		
+		var options = RailGraphManager.get_connections(port)
+		if options.is_empty():
+			return
+		
+		var next_port = RailGraphManager.resolve_next_port(port)
+		if next_port == null:
+			return
+		
+		var seg = next_port.get_parent()
+		if seg == null:
+			return
+		
+		var other = seg.reserved_by
+		if other != null and other != self:
+			# lower priority loses
+			if other.train_priority > train_priority:
+				return
+
+			# equal priority -> deterministic tie-break (instance id)
+			if other.train_priority == train_priority and other.get_instance_id() < get_instance_id():
+				return
+		
+		if seg.occupied_by != null and seg.occupied_by != self:
+			return
+
+		seg.reserved_by = self
+		
+		port = next_port

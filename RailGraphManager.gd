@@ -245,29 +245,19 @@ func set_switch(exit_port: Node3D, target_port: Node3D) -> void:
 	junction_changed.emit(exit_port)
 
 	_update_signal(exit_port)
+	_build_junction_ordering()
 
-func get_active_connection(exit_port: Node3D) -> Node3D:
-	if exit_port in active_switches:
-		return active_switches[exit_port]
-	
-	return null
-
-func resolve_next_port(port) -> Node3D:
+func resolve_next_port(port: Node3D) -> Node3D:
 	var options = connections.get(port, [])
 	if options.is_empty():
 		return null
 
 	var active = active_switches.get(port, null)
 
-	if active != null and not options.has(active):
-		active_switches.erase(port)
-		active = null
-	
-	if active != null:
-		return active
+	if active == null or not options.has(active):
+		return options[0]
 
-	# safe fallback (only when nothing is explicitly set)
-	return options[0]
+	return active
 
 func get_connections(port: Node3D) -> Array:
 	return connections.get(port, [])
@@ -318,3 +308,29 @@ func _get_direction_label(exit_port: Node3D, target_port: Node3D) -> String:
 		return "left"
 	else:
 		return "right"
+
+func update_segment_visuals(track: Node3D) -> void:
+	for segment in track.get_children():
+		if not segment.has_method("set_debug_owner_color"):
+			continue
+		
+		var col := Color(1.0, 1.0, 1.0)
+
+		if segment.occupied_by != null:
+			col = segment.occupied_by.train_color
+		elif segment.reserved_by != null:
+			col = segment.reserved_by.train_color.darkened(0.4)
+		
+		segment.set_debug_owner_color(col)
+
+func can_enter_segment(train: Node, segment: Node) -> bool:
+	if segment == null:
+		return false
+	
+	if segment.occupied_by != null and segment.occupied_by != train:
+		return false
+	
+	if segment.reserved_by != null and segment.reserved_by != train:
+		return false
+	
+	return true

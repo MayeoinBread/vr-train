@@ -55,6 +55,7 @@ script = ExtResource("5_lquwl")
 [node name="DebugTrain" parent="." unique_id=1368829044 node_paths=PackedStringArray("world_anchor") instance=ExtResource("6_272bh")]
 world_anchor = NodePath("../WorldAnchor")
 is_player_controlled = true
+train_color = Color(0.9178317, 0.62335783, 0.8140614, 1)
 speed = 6.0
 indicator_scene = ExtResource("7_272bh")
 
@@ -66,4 +67,5 @@ script = ExtResource("8_5vw27")
 [node name="AITrain" parent="." unique_id=552915092 node_paths=PackedStringArray("world_anchor") instance=ExtResource("9_kek77")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 0, -35)
 world_anchor = NodePath("../WorldAnchor")
+train_color = Color(0.95274204, 0.651272, 0.47377312, 1)
 speed = 3.9
