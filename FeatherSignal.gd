@@ -35,6 +35,8 @@ func set_occupancy_state(state: String):
 	var colour = Color.GREEN
 	if state == "red":
 		colour = Color.RED
+	elif state == "yellow":
+		colour = Color.YELLOW
 	
 	var mat: StandardMaterial3D = $OccupancyLight.get_surface_override_material(0)
 

@@ -95,6 +95,8 @@ func _update_signal(exit_port: Node3D) -> void:
 	var state = "green"
 	if next_segment.occupied_by != null:
 		state = "red"
+	elif next_segment.reserved_by != null:
+		state = "yellow"
 	m_sig.set_occupancy_state(state)
 
 func build_graph(track: Node):
@@ -349,3 +351,20 @@ func update_signals_for_segment(segment: Node3D) -> void:
 		
 		if target.get_parent() == segment:
 			_update_signal(exit_port)
+
+func get_signal_state(exit_port: Node3D, requester: Node = null) -> String:
+	var target = resolve_next_port(exit_port)
+	if target == null:
+		return "green"
+	
+	var seg = target.get_parent()
+	if seg == null:
+		return "green"
+	
+	if seg.occupied_by != null and seg.occupied_by != requester:
+		return "red"
+
+	if seg.reserved_by != null and seg.reserved_by != requester:
+		return "yellow"
+
+	return "green"

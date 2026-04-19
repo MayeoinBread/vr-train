@@ -125,32 +125,32 @@ func _physics_process(delta: float) -> void:
 		var exit_port = _get_exit_port()
 		var options = RailGraphManager.get_connections(exit_port)
 
-		var next_segment = null
 		var next_port = null
 
 		if options.size() > 0:
 			next_port = RailGraphManager.resolve_next_port(exit_port)
 			
-			if next_port != null:
-				_reserve_lookahead(exit_port)
-				next_segment = next_port.get_parent()
-		
-		var can_proceed = next_segment == null or RailGraphManager.can_enter_segment(self, next_segment)
-		
+		if next_port != null:
+			_reserve_lookahead(exit_port)
+
+		var m_signal = RailGraphManager.get_signal_state(exit_port, self)
 		var target_speed = default_speed
-		if not can_proceed:
+
+		if m_signal == "red":
 			target_speed = 0
-		else:
-			var mc = current_segment.path.curve
-			var ml = mc.get_baked_length()
+		elif m_signal == "yellow":
+			target_speed = brake_speed
+		
+		var mc = current_segment.path.curve
+		var ml = mc.get_baked_length()
 
-			var dist_to_end = (
-				ml - distance_along if direction == 1
-				else distance_along
-			)
+		var dist_to_end = (
+			ml - distance_along if direction == 1
+			else distance_along
+		)
 
-			if dist_to_end < stop_distance:
-				target_speed = brake_speed
+		if m_signal != "red" and dist_to_end < stop_distance:
+			target_speed = min(target_speed, brake_speed)
 		
 		var rate = brake_rate if target_speed < speed else accel_rate
 		speed = move_toward(speed, target_speed, rate * delta)
@@ -420,7 +420,10 @@ func _reserve_lookahead(start_port: Node3D) -> void:
 		
 		if seg.occupied_by != null and seg.occupied_by != self:
 			return
-
+		var previous = seg.reserved_by
 		seg.reserved_by = self
+
+		if i == 0 and previous != self:
+			RailGraphManager.update_signals_for_segment(seg)
 		
 		port = next_port
