@@ -68,6 +68,7 @@ func _attach_to_port(port: Node3D):
 			current_segment.occupied_by = null
 		if current_segment.reserved_by == self:
 			current_segment.reserved_by = null
+		RailGraphManager.update_signals_for_segment(current_segment)
 
 	# update current segment to the new segment
 	current_port = port
@@ -76,6 +77,8 @@ func _attach_to_port(port: Node3D):
 	# Reserve new segment for train
 	current_segment.occupied_by = self
 	current_segment.reserved_by = null
+
+	RailGraphManager.update_signals_for_segment(current_segment)
 
 	var curve: Curve3D = current_segment.path.curve
 	var length := curve.get_baked_length()

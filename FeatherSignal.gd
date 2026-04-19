@@ -29,3 +29,19 @@ func set_direction_by_string(dir: String):
 			active_index = 2
 		_:
 			active_index = -1
+
+func set_occupancy_state(state: String):
+	print("SET OCCUPANCY")
+	var colour = Color.GREEN
+	if state == "red":
+		colour = Color.RED
+	
+	var mat: StandardMaterial3D = $OccupancyLight.get_surface_override_material(0)
+
+	if mat == null or not (mat is StandardMaterial3D):
+		mat = StandardMaterial3D.new()
+		$OccupancyLight.set_surface_override_material(0, mat)
+	
+	mat.albedo_color = colour
+	mat.emission_enabled = true
+	mat.emission = colour

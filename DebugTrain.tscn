@@ -6,6 +6,8 @@
 
 [node name="DebugTrain" type="Node3D" unique_id=1368829044]
 script = ExtResource("1_bfh5u")
+lookahead_steps = 2
+lookahead_reserve = 2
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1561449993]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)

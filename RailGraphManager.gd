@@ -89,7 +89,13 @@ func _update_signal(exit_port: Node3D) -> void:
 	for b in branches:
 		if b.port == target_port:
 			m_sig.set_direction_by_string(b.label)
-			return
+			break
+	
+	var next_segment = target_port.get_parent()
+	var state = "green"
+	if next_segment.occupied_by != null:
+		state = "red"
+	m_sig.set_occupancy_state(state)
 
 func build_graph(track: Node):
 	ports.clear()
@@ -334,3 +340,12 @@ func can_enter_segment(train: Node, segment: Node) -> bool:
 		return false
 	
 	return true
+
+func update_signals_for_segment(segment: Node3D) -> void:
+	for exit_port in connections.keys():
+		var target = resolve_next_port(exit_port)
+		if target == null:
+			continue
+		
+		if target.get_parent() == segment:
+			_update_signal(exit_port)

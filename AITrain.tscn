@@ -13,6 +13,8 @@ material = SubResource("StandardMaterial3D_48665")
 script = ExtResource("1_48665")
 spawn_point_index = 1
 indicator_scene = ExtResource("2_qiuar")
+lookahead_steps = 2
+lookahead_reserve = 2
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1561449993]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
